@@ -1,0 +1,7 @@
+Revision history for Perl module Mojolicious::Command::generate::routes
+
+0.01 Tue Dec 12 21:58:36 2017
+    - original version; created by ExtUtils::ModuleMaker 0.56
+    - Written some POD.
+    - Created repository on Github.
+
