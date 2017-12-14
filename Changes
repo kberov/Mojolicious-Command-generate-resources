@@ -5,3 +5,8 @@ Revision history for Perl module Mojolicious::Command::generate::routes
     - Written some POD.
     - Created repository on Github.
 
+0.02 Thu Dec 14 01:59:34 2017
+    - Implemented rin().
+    - Added initial templates.
+    - Improved documentation.
+
