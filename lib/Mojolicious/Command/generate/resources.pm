@@ -1,4 +1,4 @@
-package Mojolicious::Command::generate::routes;
+package Mojolicious::Command::generate::resources;
 use Mojo::Base 'Mojolicious::Command';
 
 use Mojo::Util qw(class_to_file class_to_path decamelize camelize);
@@ -11,7 +11,7 @@ our $AUTHORITY = 'cpan:BEROV';
 our $VERSION   = '0.02';
 
 has args       => sub { {} };
-has description => 'Generate routes from database for your application';
+has description => 'Generate resources from database tables for your application';
 has usage => sub { shift->extract_usage };
 
 
@@ -121,20 +121,20 @@ sub run {
 
 =head1 NAME
 
-Mojolicious::Command::generate::routes - Routes from database for your application
+Mojolicious::Command::generate::resources - Resources from database for your application
 
 =head1 SYNOPSIS
 
 On the command line for one or more tables:
 
-    my_app.pl generate help routes # help with all available options
-    my_app.pl generate routes --tables users,groups
+    my_app.pl generate help resources # help with all available options
+    my_app.pl generate resources --tables users,groups
 
 
 =head1 DESCRIPTION
 
 
-L<Mojolicious::Command::generate::routes> generates directory structure for
+L<Mojolicious::Command::generate::resources> generates directory structure for
 a fully functional
 L<MVC|http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller>
 set of files, based on existing tables in the database. 
@@ -257,7 +257,7 @@ Usage information for this command, used for the help screen.
 
 =head1 METHODS
 
-L<Mojolicious::Command::generate::routes> inherits all methods from
+L<Mojolicious::Command::generate::resources> inherits all methods from
 L<Mojolicious::Command> and implements the following new ones.
 
 =head2 run
@@ -268,7 +268,7 @@ Run this command.
 
 =head1 TODO
 
-Please take look at the file TODO in the root folder of this distribution.
+Please take a look at the file TODO in the root folder of this distribution.
 
 =head1 AUTHOR
 
