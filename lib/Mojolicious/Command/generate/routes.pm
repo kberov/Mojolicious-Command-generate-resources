@@ -8,7 +8,7 @@ use List::Util qw(first);
 File::Spec::Functions->import(qw(catfile catdir splitdir));
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.01';
+our $VERSION   = '0.02';
 
 has args       => sub { {} };
 has description => 'Generate routes from database for your application';
