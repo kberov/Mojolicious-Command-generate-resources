@@ -7,7 +7,8 @@ use Mojo::URL;
 use Test::Mojo;
 
 # Override configuration for testing
-my $t = Test::Mojo->new(Blog => {sqlite => ':temp:', secrets => ['test_s3cret']});
+my $t
+  = Test::Mojo->new(Blog => {sqlite => ':temp:', secrets => ['test_s3cret']});
 $t->ua->max_redirects(10);
 
 # No posts yet
@@ -35,7 +36,7 @@ $t->get_ok('/posts/1/edit')->status_is(200)->text_is('title' => 'Edit post')
   ->text_like('form textarea[name=body]' => qr/This is a test/)
   ->element_exists('form input[value=Remove]');
 $t->post_ok(
-  '/posts/1?_method=PUT' => form => {title => 'Again', body => 'It works.'})
+      '/posts/1?_method=PUT' => form => {title => 'Again', body => 'It works.'})
   ->status_is(200)->text_is('title' => 'Again')->text_is('h2' => 'Again')
   ->text_like('p' => qr/It works/);
 $t->get_ok('/posts/1')->status_is(200)->text_is('title' => 'Again')

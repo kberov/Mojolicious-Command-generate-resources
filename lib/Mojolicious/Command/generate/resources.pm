@@ -10,108 +10,102 @@ File::Spec::Functions->import(qw(catfile catdir splitdir));
 our $AUTHORITY = 'cpan:BEROV';
 our $VERSION   = '0.02';
 
-has args       => sub { {} };
-has description => 'Generate resources from database tables for your application';
+has args => sub { {} };
+has description =>
+  'Generate resources from database tables for your application';
 has usage => sub { shift->extract_usage };
 
 
 has routes => sub {
-    $_[0]->{routes} = [];
-    foreach my $t (@{$_[0]->args->{tables}}) {
-        my $controller = camelize($t);
-        my $route      = decamelize($controller);
-        push @{$_[0]->{routes}},
-          { route => "/$route",
-            via   => ['GET'],
-            to    => "$route#list",
-          },
-          { route => "/$route/list",
-            via   => ['GET'],
-            to    => "$route#list",
-          },
-          { route => "/$route/read/:id",
-            via   => [qw(GET)],
-            to    => "$route#read",
-          },
-          { route => "/$route/create",
-            via   => [qw(GET POST)],
-            to    => "$route#create",
-            over  => {authenticated => 1},
-          },
-          { route => "/$route/update/:id",
-            via   => [qw(GET PUT)],
-            to    => "$route#update",
-            over  => {authenticated => 1},
-          },
-          { route => "/$route/delete/:id",
-            via   => [qw(GET DELETE)],
-            to    => "$route#delete",
-            over  => {authenticated => 1},
-          };
-    }
-    return $_[0]->{routes};
+  $_[0]->{routes} = [];
+  foreach my $t (@{$_[0]->args->{tables}}) {
+    my $controller = camelize($t);
+    my $route      = decamelize($controller);
+    push @{$_[0]->{routes}},
+      {route => "/$route",      via => ['GET'], to => "$route#list",},
+      {route => "/$route/list", via => ['GET'], to => "$route#list",},
+      {route => "/$route/read/:id", via => [qw(GET)], to => "$route#read",},
+      {
+       route => "/$route/create",
+       via   => [qw(GET POST)],
+       to    => "$route#create",
+       over  => {authenticated => 1},
+      },
+      {
+       route => "/$route/update/:id",
+       via   => [qw(GET PUT)],
+       to    => "$route#update",
+       over  => {authenticated => 1},
+      },
+      {
+       route => "/$route/delete/:id",
+       via   => [qw(GET DELETE)],
+       to    => "$route#delete",
+       over  => {authenticated => 1},
+      };
+  }
+  return $_[0]->{routes};
 };
 
 my $_начевамъ = sub {
-    my ($азъ, @args) = @_;
-    return $азъ if $азъ->{_initialised};
-    my $args = $азъ->args({tables => []})->args;
+  my ($азъ, @args) = @_;
+  return $азъ if $азъ->{_initialised};
+  my $args = $азъ->args({tables => []})->args;
 
-    GetOptionsFromArray(
-        \@args,
-        'C|controller_namespace=s' => \$args->{controller_namespace},
+  GetOptionsFromArray(
+                   \@args,
+                   'C|controller_namespace=s' => \$args->{controller_namespace},
+                   'L|lib=s'                  => \$args->{lib},
+                   'M|model_namespace=s'      => \$args->{model_namespace},
+                   'O|overwrite'              => \$args->{overwrite},
+                   'T|templates_root=s'       => \$args->{templates_root},
+                   't|tables=s@'              => \$args->{tables},
+                   'H|home_dir=s'             => \$args->{home_dir},
+  );
 
-        'L|lib=s'             => \$args->{lib},
-        'M|model_namespace=s' => \$args->{model_namespace},
+  @{$args->{tables}} = split(/s*?\,\s*?/, join(',', @{$args->{tables}}));
+  Carp::croak $азъ->usage unless scalar @{$args->{tables}};
 
-        'O|overwrite' => \$args->{overwrite},
+  my $app = $азъ->app;
+  $args->{controller_namespace} //= $app->routes->namespaces->[0];
+  $args->{model_namespace}      //= [ref($app) . '::Model'];
+  $args->{home_dir}             //= $app->home;
+  $args->{lib}                  //= catdir($args->{home_dir}, 'lib');
+  $args->{templates_root}       //= $app->renderer->paths->[0];
+  $азъ->{_initialised} = 1;
 
-        'T|templates_root=s' => \$args->{templates_root},
-        't|tables=s@'        => \$args->{tables},
-        'H|home_dir=s'       => \$args->{home_dir},
-    );
-
-    @{$args->{tables}} = split(/s*?\,\s*?/, join(',', @{$args->{tables}}));
-    Carp::croak $азъ->usage unless scalar @{$args->{tables}};
-    my $app = $азъ->app;
-    $args->{controller_namespace} //= $app->routes->namespaces->[0];
-    $args->{model_namespace} //= [ref($app).'::Model'];
-    $args->{home_dir}       //= $app->home;
-    $args->{lib}            //= catdir($args->{home_dir}, 'lib');
-    $args->{templates_root} //= $app->renderer->paths->[0];
-    $азъ->{_initialised} = 1;
-    return $азъ;
+  return $азъ;
 };
 
 
 sub run {
-    my ($self) = shift->$_начевамъ(@_);
-    my $args   = $self->args;
-    my $app    = $self->app;
+  my ($self) = shift->$_начевамъ(@_);
+  my $args   = $self->args;
+  my $app    = $self->app;
 
-    foreach my $t (@{$args->{tables}}) {
+  foreach my $t (@{$args->{tables}}) {
 
-        # Controllers
-        my $class_name = camelize($t);
-        $args->{class} = $args->{controller_namespace} . '::' . $class_name;
-        my $c_file = catfile($args->{lib}, class_to_path($args->{class}));
-        $args->{t} = lc $t;
-        $self->render_to_file('class', $c_file, $args);
+    # Controllers
+    my $class_name = camelize($t);
+    $args->{class} = $args->{controller_namespace} . '::' . $class_name;
+    my $c_file = catfile($args->{lib}, class_to_path($args->{class}));
+    $args->{t} = lc $t;
+    $self->render_to_file('class', $c_file, $args);
 
-        # Templates
-        my $template_dir  = decamelize($class_name);
-        my $template_root = $args->{templates_root};
-        my $t_file        = catfile($template_root, $template_dir, 'list.html.ep');
-        $self->render_to_file('list_template', $t_file, $args);
-        $t_file = catfile($template_root, $template_dir, 'create.html.ep');
-        $self->render_to_file('create_template', $t_file, $args);
-        $t_file = catfile($template_root, $template_dir, 'read.html.ep');
-        $self->render_to_file('read_template', $t_file, $args);
-        $t_file = catfile($template_root, $template_dir, 'delete.html.ep');
-        $self->render_to_file('delete_template', $t_file, $args);
-    }    # end foreach tables
+    # Templates
+    my $template_dir  = decamelize($class_name);
+    my $template_root = $args->{templates_root};
+    my $t_file        = catfile($template_root, $template_dir, 'list.html.ep');
+    $self->render_to_file('list_template', $t_file, $args);
+    $t_file = catfile($template_root, $template_dir, 'create.html.ep');
+    $self->render_to_file('create_template', $t_file, $args);
+    $t_file = catfile($template_root, $template_dir, 'read.html.ep');
+    $self->render_to_file('read_template', $t_file, $args);
+    $t_file = catfile($template_root, $template_dir, 'delete.html.ep');
+    $self->render_to_file('delete_template', $t_file, $args);
+  }    # end foreach tables
 
-    return $self;
+  return $self;
 }
 
 

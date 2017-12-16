@@ -4,6 +4,6 @@
 
 use Test::More tests => 1;
 
-BEGIN { use_ok( 'Mojolicious::Command::generate::routes' ); }
+BEGIN { use_ok('Mojolicious::Command::generate::resources'); }
 
 

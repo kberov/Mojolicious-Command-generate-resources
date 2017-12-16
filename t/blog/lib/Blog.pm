@@ -12,9 +12,16 @@ sub startup {
   $self->secrets($self->config('secrets'));
 
   # Model
-  $self->helper(sqlite => sub { state $sql = Mojo::SQLite->new->from_filename(shift->config('sqlite')) });
   $self->helper(
-    posts => sub { state $posts = Blog::Model::Posts->new(sqlite => shift->sqlite) });
+    sqlite => sub {
+      state $sql = Mojo::SQLite->new->from_filename(shift->config('sqlite'));
+    }
+  );
+  $self->helper(
+    posts => sub {
+      state $posts = Blog::Model::Posts->new(sqlite => shift->sqlite);
+    }
+  );
 
   # Migrate to latest version if necessary
   my $path = $self->home->child('migrations', 'blog.sql');
