@@ -7,3 +7,23 @@ create table if not exists posts (
 
 -- 1 down
 drop table if exists posts;
+
+-- 2 up
+
+create table if not exists groups (
+  id    integer primary key autoincrement,
+  name varchar(30),
+  description  varchar(200)
+);
+
+create table if not exists users (
+  id    integer primary key autoincrement,
+  group_id integer references groups(id),
+  username varchar(20),
+  name varchar(30)
+);
+
+-- 2 down
+drop table if exists groups;
+drop table if exists users;
+
