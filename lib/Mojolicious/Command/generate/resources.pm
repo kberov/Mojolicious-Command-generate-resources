@@ -53,22 +53,23 @@ my $_начевамъ = sub {
   my $args = $азъ->args({tables => []})->args;
 
   GetOptionsFromArray(
-                   \@args,
-                   'C|controller_namespace=s' => \$args->{controller_namespace},
-                   'L|lib=s'                  => \$args->{lib},
-                   'M|model_namespace=s'      => \$args->{model_namespace},
-                   'O|overwrite'              => \$args->{overwrite},
-                   'T|templates_root=s'       => \$args->{templates_root},
-                   't|tables=s@'              => \$args->{tables},
-                   'H|home_dir=s'             => \$args->{home_dir},
-  );
+    \@args,
+    'C|controller_namespace=s' => \$args->{controller_namespace},
+    'L|lib=s'                  => \$args->{lib},
+    'M|model_namespace=s'      => \$args->{model_namespace},
 
-  @{$args->{tables}} = split(/s*?\,\s*?/, join(',', @{$args->{tables}}));
+    # TODO: 'O|overwrite'              => \$args->{overwrite},
+    'T|templates_root=s' => \$args->{templates_root},
+    't|tables=s@'        => \$args->{tables},
+    'H|home_dir=s'       => \$args->{home_dir},
+                     );
+
+  @{$args->{tables}} = split(/\s*?\,\s*?/, join(',', @{$args->{tables}}));
   Carp::croak $азъ->usage unless scalar @{$args->{tables}};
 
   my $app = $азъ->app;
   $args->{controller_namespace} //= $app->routes->namespaces->[0];
-  $args->{model_namespace}      //= [ref($app) . '::Model'];
+  $args->{model_namespace}      //= ref($app) . '::Model';
   $args->{home_dir}             //= $app->home;
   $args->{lib}                  //= catdir($args->{home_dir}, 'lib');
   $args->{templates_root}       //= $app->renderer->paths->[0];
@@ -86,23 +87,23 @@ sub run {
   foreach my $t (@{$args->{tables}}) {
 
     # Controllers
-    my $class_name = camelize($t);
-    $args->{class} = $args->{controller_namespace} . '::' . $class_name;
-    my $c_file = catfile($args->{lib}, class_to_path($args->{class}));
-    $args->{t} = lc $t;
-    $self->render_to_file('class', $c_file, $args);
+    my $class_name    = camelize($t);
+    my $class         = $args->{controller_namespace} . '::' . $class_name;
+    my $c_file        = catfile($args->{lib}, class_to_path($class));
+    my $template_args = {%$args, class => $class, t => lc $t};
+    $self->render_to_file('class', $c_file, $template_args);
 
     # Templates
     my $template_dir  = decamelize($class_name);
     my $template_root = $args->{templates_root};
     my $t_file        = catfile($template_root, $template_dir, 'list.html.ep');
-    $self->render_to_file('list_template', $t_file, $args);
+    $self->render_to_file('list_template', $t_file, $template_args);
     $t_file = catfile($template_root, $template_dir, 'create.html.ep');
-    $self->render_to_file('create_template', $t_file, $args);
+    $self->render_to_file('create_template', $t_file, $template_args);
     $t_file = catfile($template_root, $template_dir, 'read.html.ep');
-    $self->render_to_file('read_template', $t_file, $args);
+    $self->render_to_file('read_template', $t_file, $template_args);
     $t_file = catfile($template_root, $template_dir, 'delete.html.ep');
-    $self->render_to_file('delete_template', $t_file, $args);
+    $self->render_to_file('delete_template', $t_file, $template_args);
   }    # end foreach tables
 
   return $self;
@@ -119,7 +120,7 @@ Mojolicious::Command::generate::resources - Resources from database for your app
 
 =head1 SYNOPSIS
 
-On the command line for one or more tables:
+  Usage: APPLICATION generate resources [OPTIONS]
 
     my_app.pl generate help resources # help with all available options
     my_app.pl generate resources --tables users,groups
@@ -154,29 +155,27 @@ taste.
 
 Below are the options this command accepts, described in Getopt::Long notation.
 Both short and long variants are shown as well as the types of values they
-accept. B<MyApp> is used as an example name for your application. All of them,
-beside C<--tables>, are guessed from your application and usually do not need
-to be specified.
+accept. All of them, beside C<--tables>, are guessed from your application and
+usually do not need to be specified.
 
 
 =head2 C|controller_namespace=s
 
 Optional. The namespace for the controller classes to be generated. Defaults to
-C<app-E<gt>routes-E<gt>namespaces-E<gt>[0]>, usually L<MyApp::Controller>. If you
-decide to use another namespace for the controllers, do not forget to add it to
-the list C<app-E<gt>routes-E<gt>namespaces> in C<myapp.conf> or your plugin
+C<app-E<gt>routes-E<gt>namespaces-E<gt>[0]>, usually L<MyApp::Controller>, where
+MyApp is the name of your application. If you decide to use another namespace
+for the controllers, do not forget to add it to the list
+C<app-E<gt>routes-E<gt>namespaces> in C<myapp.conf> or your plugin
 configuration file. Here is an example.
 
-    # Setting the Controller class from which all controllers must inherit.
-    # See /perldoc/Mojolicious/#controller_class
-    # See /perldoc/Mojolicious/Guides/Growing#Controller-class
-    app->controller_class('MyApp::Control');
+  # Setting the Controller class from which all controllers must inherit.
+  # See /perldoc/Mojolicious/#controller_class
+  # See /perldoc/Mojolicious/Guides/Growing#Controller-class
+  app->controller_class('MyApp::C');
 
-    # Namespace(s) to load controllers from
-    # See /perldoc/Mojolicious#routes
-    app->routes->namespaces(['MyApp::Control']);
-
-
+  # Namespace(s) to load controllers from
+  # See /perldoc/Mojolicious#routes
+  app->routes->namespaces(['MyApp::C']);
 
 =head2 H|home_dir=s
 
@@ -213,7 +212,8 @@ Mandatory. List of tables separated by commas for which controllers should be ge
 
 =head1 SUPPORT
 
-Please report bugs, contribute and make merge requests on Github.
+Please report bugs, contribute and make merge requests on
+L<Github|https://github.com/kberov/Mojolicious-Command-generate-resources>.
 
 =head1 ATTRIBUTES
 
@@ -222,8 +222,7 @@ L<Mojolicious::Command> and implements the following new ones.
 
 =head2 args
 
-Used for storing arguments from the commandline and then passing them to the
-template
+Used for storing arguments from the commandline template.
 
   my $args = $self->args;
 
@@ -232,14 +231,14 @@ template
   my $description = $command->description;
   $command        = $command->description('Foo!');
 
-Short description of this command, used for the command list.
+Short description of this command, used for the commands list.
 
 =head2 routes
 
   $self->routes();
 
 Returns an ARRAY reference containing routes, prepared after
-C<$self-E<gt>args-E<gt>{tables}>. suggested code for the rutes is dumped on
+C<$self-E<gt>args-E<gt>{tables}>. Suggested Perl code for the routes is dumped on
 STDOUT so you can copy and paste into your application code.
 
 =head2 usage

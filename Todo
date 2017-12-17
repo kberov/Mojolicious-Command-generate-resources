@@ -1,11 +1,11 @@
 TODO list for Perl module Mojolicious::Command::generate::routes
 
 The work on the features may not go in the same order specified here. Some
-parts ma be fully implemented while others may be left for later.
+parts may be fully implemented while others may be left for later.
 
 - Write the documentation to make people know what this module will do and use
-  it as a specification later on.
-- Implement generation of controllers. Functionality and templates. (C).
+  it as a specification later on. Done.
+- Implement generation of controllers. Functionality and templates. (C). 
   Improve documentation. Tests.
 - Implement templates for templates. (V). Tests
 - Implement templates for models. (M). Tests.
