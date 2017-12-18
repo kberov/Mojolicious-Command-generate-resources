@@ -1,8 +1,10 @@
+% my $a = shift;
 %% layout 'blog', title => 'Blog';
-%% for my $item (@$<%= $a->{t} %>) {
+%% my $columns = []; #table columns
+%% for my $item (@$columns) {
   <h2><%%= link_to $item->{title} => show_<%= $a->{t} %> => {id => $item->{id}} %></h2>
   <p>
-    %= $item->{body}
+    %%= $item->{body}
   </p>
 %% }
 %%= link_to 'New' => 'create_<%= $a->{t} %>'

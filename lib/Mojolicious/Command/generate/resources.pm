@@ -22,26 +22,39 @@ has routes => sub {
     my $controller = camelize($t);
     my $route      = decamelize($controller);
     push @{$_[0]->{routes}},
-      {route => "/$route",      via => ['GET'], to => "$route#list",},
-      {route => "/$route/list", via => ['GET'], to => "$route#list",},
-      {route => "/$route/read/:id", via => [qw(GET)], to => "$route#read",},
+      {route => "/$route", via => ['GET'], to => "$route#index",},
+      {
+       route => "/$route/:id",
+       via   => ['GET'],
+       to    => "$route#show",
+       name  => "show_$route"
+      },
       {
        route => "/$route/create",
-       via   => [qw(GET POST)],
+       via   => ['GET'],
        to    => "$route#create",
-       over  => {authenticated => 1},
+       name  => "create_$route",
       },
       {
-       route => "/$route/update/:id",
-       via   => [qw(GET PUT)],
-       to    => "$route#update",
-       over  => {authenticated => 1},
+       route => "/$route",
+       via   => ['POST'],
+       to    => "$route#store",
+       name  => "store_$route",
       },
       {
-       route => "/$route/delete/:id",
-       via   => [qw(GET DELETE)],
-       to    => "$route#delete",
-       over  => {authenticated => 1},
+       route => "/$route/:id/edit",
+       via   => ['GET'],
+       to    => "$route#edit", name=>"edit_$route"
+      },
+      {
+       route => "/$route/:id",
+       via   => ['PUT'],
+       to    => "$route#update", name=>"update_$route"
+      },
+      {
+       route => "/$route/:id",
+       via   => ['DELETE'],
+       to    => "$route#remove", name=>"remove_$route"
       };
   }
   return $_[0]->{routes};
@@ -79,7 +92,6 @@ my $_начевамъ = sub {
     my $templates_path
       = catdir($path, 'Mojolicious/resources/templates/mojo/command/resources');
     if (-d $templates_path) {
-      $app->log->debug($templates_path);
       push @{$app->renderer->paths}, $templates_path;
       $азъ->_templates_path($templates_path);
       last;
@@ -97,7 +109,7 @@ sub run {
   my $app    = $self->app;
 
   my $tmpls_path = $self->_templates_path;
-  foreach my $t (@{$args->{tables}}) {
+  for my $t (@{$args->{tables}}) {
 
     # Controllers
     my $class_name    = camelize($t);
@@ -110,21 +122,13 @@ sub run {
     # Templates
     my $template_dir  = decamelize($class_name);
     my $template_root = $args->{templates_root};
-    my $t_file        = catfile($template_root, $template_dir, 'index.html.ep');
-    $self->render_template_to_file(catfile($tmpls_path, 'index.html.ep'),
-                                   $t_file, $template_args);
-    $t_file = catfile($template_root, $template_dir, 'create.html.ep');
-    $self->render_template_to_file(catfile($tmpls_path, 'create.html.ep'),
-                                   $t_file, $template_args);
-    $tmpl_file = catfile($template_root, $template_dir, 'show.html.ep');
-    $self->render_template_to_file(catfile($tmpls_path, 'show.html.ep'),
-                                   $t_file, $template_args);
-    $t_file = catfile($template_root, $template_dir, 'edit.html.ep');
-    $self->render_to_file(catfile($tmpls_path, 'edit.html.ep'),
-                          $t_file, $template_args);
-    $t_file = catfile($template_root, $template_dir, '_form.html.ep');
-    $self->render_to_file(catfile($tmpls_path, 'form.html.ep'),
-                          $t_file, $template_args);
+
+    my @views = qw(index create show edit _form);
+    for my $v (@views) {
+      my $t_file = catfile($template_root, $template_dir, $v . '.html.ep');
+      my $tmpl_file = catfile($tmpls_path, $v . '.html.ep');
+      $self->render_template_to_file($tmpl_file, $t_file, $template_args);
+    }
   }    # end foreach tables
 
   return $self;
