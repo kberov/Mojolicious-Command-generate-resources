@@ -1,11 +1,10 @@
 package Mojolicious::Command::generate::resources;
 use Mojo::Base 'Mojolicious::Command';
 
-use Mojo::Util qw(class_to_file class_to_path decamelize camelize);
+use Mojo::Util qw(class_to_path decamelize camelize);
 use Getopt::Long qw(GetOptionsFromArray :config auto_abbrev
   gnu_compat no_ignore_case);
-use List::Util qw(first);
-File::Spec::Functions->import(qw(catfile catdir splitdir));
+File::Spec::Functions->import(qw(catfile catdir));
 
 our $AUTHORITY = 'cpan:BEROV';
 our $VERSION   = '0.02';
@@ -15,6 +14,7 @@ has description =>
   'Generate resources from database tables for your application';
 has usage => sub { shift->extract_usage };
 
+has _templates_path => '';
 
 has routes => sub {
   $_[0]->{routes} = [];
@@ -73,6 +73,18 @@ my $_начевамъ = sub {
   $args->{home_dir}             //= $app->home;
   $args->{lib}                  //= catdir($args->{home_dir}, 'lib');
   $args->{templates_root}       //= $app->renderer->paths->[0];
+
+  # Add command templates to renderer paths to be used by applications too
+  for my $path (@INC) {
+    my $templates_path
+      = catdir($path, 'Mojolicious/resources/templates/mojo/command/resources');
+    if (-d $templates_path) {
+      $app->log->debug($templates_path);
+      push @{$app->renderer->paths}, $templates_path;
+      $азъ->_templates_path($templates_path);
+      last;
+    }
+  }
   $азъ->{_initialised} = 1;
 
   return $азъ;
@@ -84,6 +96,7 @@ sub run {
   my $args   = $self->args;
   my $app    = $self->app;
 
+  my $tmpls_path = $self->_templates_path;
   foreach my $t (@{$args->{tables}}) {
 
     # Controllers
@@ -91,24 +104,38 @@ sub run {
     my $class         = $args->{controller_namespace} . '::' . $class_name;
     my $c_file        = catfile($args->{lib}, class_to_path($class));
     my $template_args = {%$args, class => $class, t => lc $t};
-    $self->render_to_file('class', $c_file, $template_args);
+    my $tmpl_file     = catfile($tmpls_path, 'c_class.ep');
+    $self->render_template_to_file($tmpl_file, $c_file, $template_args);
 
     # Templates
     my $template_dir  = decamelize($class_name);
     my $template_root = $args->{templates_root};
-    my $t_file        = catfile($template_root, $template_dir, 'list.html.ep');
-    $self->render_to_file('list_template', $t_file, $template_args);
+    my $t_file        = catfile($template_root, $template_dir, 'index.html.ep');
+    $self->render_template_to_file(catfile($tmpls_path, 'index.html.ep'),
+                                   $t_file, $template_args);
     $t_file = catfile($template_root, $template_dir, 'create.html.ep');
-    $self->render_to_file('create_template', $t_file, $template_args);
-    $t_file = catfile($template_root, $template_dir, 'read.html.ep');
-    $self->render_to_file('read_template', $t_file, $template_args);
-    $t_file = catfile($template_root, $template_dir, 'delete.html.ep');
-    $self->render_to_file('delete_template', $t_file, $template_args);
+    $self->render_template_to_file(catfile($tmpls_path, 'create.html.ep'),
+                                   $t_file, $template_args);
+    $tmpl_file = catfile($template_root, $template_dir, 'show.html.ep');
+    $self->render_template_to_file(catfile($tmpls_path, 'show.html.ep'),
+                                   $t_file, $template_args);
+    $t_file = catfile($template_root, $template_dir, 'edit.html.ep');
+    $self->render_to_file(catfile($tmpls_path, 'edit.html.ep'),
+                          $t_file, $template_args);
+    $t_file = catfile($template_root, $template_dir, '_form.html.ep');
+    $self->render_to_file(catfile($tmpls_path, 'form.html.ep'),
+                          $t_file, $template_args);
   }    # end foreach tables
 
   return $self;
 }
 
+
+sub render_template_to_file {
+  my ($self, $filename, $path) = (shift, shift, shift);
+  my $out = Mojo::Template->new->render_file($filename, @_);
+  return $self->write_file($path, $out);
+}
 
 1;
 
@@ -288,172 +315,4 @@ L<Mojolicious>,
 L<Perl|https://www.perl.org/>.
 
 =cut
-
-
-__DATA__
-
-@@ class
-% my $a = shift;
-package <%= $a->{class} %>;
-use Mojo::Base '<%= $a->{controller_namespace} %>';
-
-our $VERSION = '0.01';
-
-
-# List resourses from table <%= $a->{t} %>.
-sub list {
-    my $c = shift;
-    # 1. Get a range of rows from the database.
-    my $list = [
-        {id=>1, title=>'hello', body =>'the whole text for "hello"'},
-        {id=>2, title=>'world', body =>'the whole text for "world"'},
-    ];
-    # 2. Return it to the user.
-    return $c->respond_to(
-        json => $list,
-        html =>{list =>$list}
-    );
-}
-
-# Creates a resource in table <%= $a->{t} %>.
-sub create {
-    my $c = shift;
-    my $v = $c->validation;
-    return $c->render unless $v->has_data;
-
-    $v->required('title')->size(3, 50);
-    $v->required('body')->size(3, 1 * 1024 * 1024);#1MB
-    # 1. Validate the input
-    # 2. Insert it into the databse
-    # 3. Prepare the response data or just return "201 Created"
-    # See https://developer.mozilla.org/docs/Web/HTTP/Status/201
-    my $data = {id => 1, 
-        title => 'Hello World', body =>'the text of the "Hello World" article'};
-
-    return $c->respond_to(
-        json => {data => $data},
-        html => {data => $data}
-    );
-}
-
-# Reads a resource from table <%= $a->{t} %>.
-sub read {
-    my $c = shift;
-    # This could be validated by a stricter route placeholder.
-    my ($id) = $c->stash('id') =~/(\d+)/;
-    
-    # 1. Find the data in table $a->{t}.
-    my $data = {id => $id , 
-        title => 'Hello World', body =>'the text of the "Hello World" article'};
-    $c->debug('$data:'.$c->dumper($data));
-
-    # 2. Return it to the user.
-    return $c->respond_to(
-        json => {$a->{t} => $data},
-        html => {$a->{t} => $data}
-    );
-}
-
-# Updates a resource in table <%= $a->{t} %>.
-sub update {
-    my $c = shift;
-    my $v = $c->validation;
-    my ($id) = $c->stash('id') =~/(\d+)/;
-    
-    # 1. Find the data in table $a->{t}.
-    my $data = {id => $id , 
-        title => 'Hello World', body =>'the text of the "Hello World" article'};
-    $c->reply->not_found() unless $data;
-    $c->debug('$data:'.$c->dumper($res->data));
-
-    # 2., 3. Validate and update the data.
-    if($v->has_data && $data){
-        $v->optional('title')->size(3, 50);
-        $v->optional('body')->size(3, 1 * 1024 * 1024);#1MB
-        # $res->title($v->param('title'))->body($v->param('body'))
-        #   ->update() unless $v->has_error;
-    }
-
-    # 4. Return the updated the data or just send "204 No Content"
-    # See https://developer.mozilla.org/bg/docs/Web/HTTP/Status/204
-    return $c->respond_to(
-        json => {article => $data},
-        html => {article => $data}
-    );
-}
-
-# "Deletes" a resource from table <%= $a->{t} %>.
-sub delete {
-    return shift->render(message => '"delete" is not implemented...');
-}
-
-
-
-1;
-
-<% %>__END__
-
-<% %>=encoding utf8
-
-<% %>=head1 NAME
-
-<%= $a->{class} %> - a controller for resource <%= $a->{t} %>.
-
-<% %>=head1 SYNOPSIS
-
-
-
-<% %>=cut
-
-
-
-@@ list_template
-% $a = shift;
-%% my $columns = [qw(id title body)];
-<table>
-  <thead>
-    <tr>
-    %% foreach my $column( @$columns ){
-      <th><%%= $column %></th>
-    %% }
-    </tr>
-  </thead>
-  <tbody>
-    %% foreach my $row (@{$list->{json}{data}}) {
-    <tr>
-      %% foreach my $column( @$columns ){
-      <td><%%= $row->{$column} %></td>
-      %% }
-    </tr>
-    %% }
-  </tbody>
-    %%#== $c->dumper($list);
-</table>
-
-@@ create_template
-% $a = shift;
-<article>
-  Create your form for creating a resource here.
-</article>
-
-@@ read_template
-% $a = shift;
-<article id="<%%= $article->{id} %>">
-  <h1><%%= $article->{title} %></h1>
-  <section><%%= $article->{body} %></section>
-</article>
-
-@@ update_template
-% $a = shift;
-<article>
-  Create your form for updating a resource here.
-</article>
-
-
-@@ delete_template
-% $a = shift;
-<article>
-  <section class="ui error form segment"><%%= $message %></section>
-</article>
-
 

@@ -1,0 +1,13 @@
+% my $a = shift;
+% # TODO: Loop trough all the columns and render appropriate input fields.
+%%= form_for $target => begin
+  %%= label_for title => 'Title'
+  <br>
+  %%= text_field title => $<%= $a->{t} %>->{title}
+  <br>
+  %%= label_for body => 'Body'
+  <br>
+  %%= text_area body => $<%= $a->{t} %>->{body}
+  <br>
+  %%= submit_button $caption
+%% end
