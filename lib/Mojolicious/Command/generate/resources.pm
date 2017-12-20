@@ -7,7 +7,7 @@ use Getopt::Long qw(GetOptionsFromArray :config auto_abbrev
 File::Spec::Functions->import(qw(catfile catdir));
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.02';
+our $VERSION   = '0.03';
 
 has args => sub { {} };
 has description =>
@@ -22,7 +22,12 @@ has routes => sub {
     my $controller = camelize($t);
     my $route      = decamelize($controller);
     push @{$_[0]->{routes}},
-      {route => "/$route", via => ['GET'], to => "$route#index",},
+      {
+       route => "/$route",
+       via   => ['GET'],
+       to    => "$route#index",
+       name  => "home_$route"
+      },
       {
        route => "/$route/:id",
        via   => ['GET'],
@@ -129,7 +134,8 @@ sub run {
   my $args   = $self->args;
   my $app    = $self->app;
 
-  my $tmpls_path = $self->_templates_path;
+  my $wrapper_helpers = '';
+  my $tmpls_path      = $self->_templates_path;
   for my $t (@{$args->{tables}}) {
 
     my $class_name = camelize($t);
@@ -166,7 +172,21 @@ sub run {
       my $tmpl_file = catfile($tmpls_path, $v . '.html.ep');
       $self->render_template_to_file($tmpl_file, $t_file, $template_args);
     }
+
+    # Helpers
+    $template_args
+      = {%$args, t => lc $t, db_helper => $self->_db_helper, class => $mclass};
+    $tmpl_file = catfile($tmpls_path, 'helper.ep');
+    $wrapper_helpers
+      .= Mojo::Template->new->render_file($tmpl_file, $template_args);
   }    # end foreach tables
+
+  # Routes
+  my $template_args
+    = {%$args, helpers => $wrapper_helpers, routes => $self->routes};
+  my $tmpl_file = catfile($tmpls_path,       'TODO.ep');
+  my $todo_file = catfile($args->{home_dir}, 'TODO');
+  $self->render_template_to_file($tmpl_file, $todo_file, $template_args);
   return $self;
 }
 
