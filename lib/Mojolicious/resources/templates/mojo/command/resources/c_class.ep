@@ -9,6 +9,8 @@ sub create($c) {
   $c->render(<%= $a->{t} %> => {})
 }
 
+# POST /<%= $a->{t} %>
+# Add a new record to table <%= $a->{t} %>.
 sub store($c) {
 
   # 1. Validate input
@@ -21,9 +23,6 @@ sub store($c) {
   # See https://developer.mozilla.org/docs/Web/HTTP/Status/201
   $c->redirect_to('show_<%= $a->{t} %>', id => $id);
 }
-
-
-
 
 # GET /<%= $a->{t} %>/:id/edit 
 # Display form for edititing resource in table <%= $a->{t} %>.
@@ -49,6 +48,12 @@ sub update($c) {
   $c->redirect_to('show_<%= $a->{t} %>', id => $id);
 }
 
+# GET /<%= $a->{t} %>/:id
+# Display a record from table <%= $a->{t} %>.
+sub show($c) {
+  $c->render(<%= $a->{t} %> => $c-><%= $a->{t} %>->find($c->param('id')));
+}
+
 # GET /<%= $a->{t} %>
 # List resources from table <%= $a->{t} %>.
 sub index {
@@ -63,9 +68,6 @@ sub remove {
   $c->redirect_to('<%= $a->{t} %>');
 }
 
-sub show($c) {
-  $c->render(<%= $a->{t} %> => $c-><%= $a->{t} %>->find($c->param('id')));
-}
 
 # Validation for actions that store or update
 sub _validation($c) {

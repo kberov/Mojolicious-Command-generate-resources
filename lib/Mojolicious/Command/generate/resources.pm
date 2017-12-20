@@ -13,8 +13,8 @@ has args => sub { {} };
 has description =>
   'Generate resources from database tables for your application';
 has usage => sub { shift->extract_usage };
-
 has _templates_path => '';
+has '_db_helper';
 
 has routes => sub {
   $_[0]->{routes} = [];
@@ -44,17 +44,20 @@ has routes => sub {
       {
        route => "/$route/:id/edit",
        via   => ['GET'],
-       to    => "$route#edit", name=>"edit_$route"
+       to    => "$route#edit",
+       name  => "edit_$route"
       },
       {
        route => "/$route/:id",
        via   => ['PUT'],
-       to    => "$route#update", name=>"update_$route"
+       to    => "$route#update",
+       name  => "update_$route"
       },
       {
        route => "/$route/:id",
        via   => ['DELETE'],
-       to    => "$route#remove", name=>"remove_$route"
+       to    => "$route#remove",
+       name  => "remove_$route"
       };
   }
   return $_[0]->{routes};
@@ -87,16 +90,34 @@ my $_начевамъ = sub {
   $args->{lib}                  //= catdir($args->{home_dir}, 'lib');
   $args->{templates_root}       //= $app->renderer->paths->[0];
 
-  # Add command templates to renderer paths to be used by applications too
+  # Find templates.
+  # TODO: Look into renderer->paths for user-defined/modified templates
   for my $path (@INC) {
     my $templates_path
       = catdir($path, 'Mojolicious/resources/templates/mojo/command/resources');
     if (-d $templates_path) {
-      push @{$app->renderer->paths}, $templates_path;
       $азъ->_templates_path($templates_path);
       last;
     }
   }
+ 
+  # Find the used database helper. One of sqlite, pg, mysql
+  my @db_helpers = qw(sqlite pg mysql);
+  for (@db_helpers) {
+    if ($app->renderer->get_helper($_)) {
+      $азъ->_db_helper($_);
+      last;
+    }
+  }
+  if (!$азъ->_db_helper) {
+    Carp::croak(<<'MSG');
+Guessing the used database helper failed One of (@db_helpers) is required.
+This application does not use any of the supported database helpers.
+One of Mojo::Pg, Mojo::mysql or Mojo::SQLite must be used to generate models.
+Aborting!..
+MSG
+  }
+
   $азъ->{_initialised} = 1;
 
   return $азъ;
@@ -111,12 +132,18 @@ sub run {
   my $tmpls_path = $self->_templates_path;
   for my $t (@{$args->{tables}}) {
 
-    # Controllers
     my $class_name    = camelize($t);
-    my $class         = $args->{controller_namespace} . '::' . $class_name;
+    # Models
+    my $mclass = "$args->{model_namespace}::$class_name";
+    my $m_file =  catfile($args->{lib}, class_to_path($mclass));
+    my $template_args = {%$args, class => $mclass, t => lc $t,db_helper=> $self->_db_helper};
+    my $tmpl_file     = catfile($tmpls_path, 'm_class.ep');
+    $self->render_template_to_file($tmpl_file, $m_file, $template_args);
+    # Controllers
+    my $class         = "$args->{controller_namespace}::$class_name";
     my $c_file        = catfile($args->{lib}, class_to_path($class));
-    my $template_args = {%$args, class => $class, t => lc $t};
-    my $tmpl_file     = catfile($tmpls_path, 'c_class.ep');
+    $template_args = {%$args, class => $class, t => lc $t};
+    $tmpl_file     = catfile($tmpls_path, 'c_class.ep');
     $self->render_template_to_file($tmpl_file, $c_file, $template_args);
 
     # Templates
@@ -130,7 +157,6 @@ sub run {
       $self->render_template_to_file($tmpl_file, $t_file, $template_args);
     }
   }    # end foreach tables
-
   return $self;
 }
 
@@ -179,8 +205,12 @@ creating, updating and deleting records from the tables you specified on the
 command-line. The generated code is just boilerplate to give you a jump start,
 so you can concentrate on writing your business-specific code. It is assumed
 that you will modify the generated code to suit your specific needs. All the
-generated code is produced from templates which you also can modify to your
-taste.
+generated code is produced from templates which you also can put in your
+application renderer's path and modify to your taste.
+
+The command expects to find one of the commonly used helpers C<pg>, C<mysql>
+C<sqlite>. The supported wrappers are respectively L<Mojo::Pg>, L<Mojo::mysql>
+and L<Mojo::SQLite>.
 
 =head1 OPTIONS
 

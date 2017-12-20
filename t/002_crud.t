@@ -59,6 +59,9 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
   like($buffer,
        qr{\[write\].+?lib/Blog/Controller/Users.pm},
        "written lib/Blog/Controller/Users.pm");
+  like($buffer,
+       qr{\[write\].+?lib/Blog/Model/Users.pm},
+       "written lib/Blog/Model/Users.pm");
   like($buffer, qr{\[mkdir\].+?templates/users}, "made dir templates/users");
   like($buffer,
        qr{\[write\].+?templates/users/index.html.ep},
