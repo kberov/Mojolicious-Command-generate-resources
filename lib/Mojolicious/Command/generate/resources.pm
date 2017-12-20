@@ -1,5 +1,5 @@
 package Mojolicious::Command::generate::resources;
-use Mojo::Base 'Mojolicious::Command';
+use Mojo::Base 'Mojolicious::Command', -signatures;
 
 use Mojo::Util qw(class_to_path decamelize camelize);
 use Getopt::Long qw(GetOptionsFromArray :config auto_abbrev
@@ -100,7 +100,7 @@ my $_начевамъ = sub {
       last;
     }
   }
- 
+
   # Find the used database helper. One of sqlite, pg, mysql
   my @db_helpers = qw(sqlite pg mysql);
   for (@db_helpers) {
@@ -110,9 +110,9 @@ my $_начевамъ = sub {
     }
   }
   if (!$азъ->_db_helper) {
-    Carp::croak(<<'MSG');
-Guessing the used database helper failed One of (@db_helpers) is required.
-This application does not use any of the supported database helpers.
+    die <<'MSG';
+Guessing the used database wrapper helper failed. One of (@db_helpers) is
+required. This application does not use any of the supported database helpers.
 One of Mojo::Pg, Mojo::mysql or Mojo::SQLite must be used to generate models.
 Aborting!..
 MSG
@@ -132,18 +132,28 @@ sub run {
   my $tmpls_path = $self->_templates_path;
   for my $t (@{$args->{tables}}) {
 
-    my $class_name    = camelize($t);
+    my $class_name = camelize($t);
+
     # Models
-    my $mclass = "$args->{model_namespace}::$class_name";
-    my $m_file =  catfile($args->{lib}, class_to_path($mclass));
-    my $template_args = {%$args, class => $mclass, t => lc $t,db_helper=> $self->_db_helper};
-    my $tmpl_file     = catfile($tmpls_path, 'm_class.ep');
+    my $mclass        = "$args->{model_namespace}::$class_name";
+    my $m_file        = catfile($args->{lib}, class_to_path($mclass));
+    my $table_columns = $self->_get_table_columns($t);
+    my $template_args = {
+                         %$args,
+                         class     => $mclass,
+                         t         => lc $t,
+                         db_helper => $self->_db_helper,
+                         columns   => $table_columns,
+                        };
+    my $tmpl_file = catfile($tmpls_path, 'm_class.ep');
     $self->render_template_to_file($tmpl_file, $m_file, $template_args);
+
     # Controllers
-    my $class         = "$args->{controller_namespace}::$class_name";
-    my $c_file        = catfile($args->{lib}, class_to_path($class));
-    $template_args = {%$args, class => $class, t => lc $t};
-    $tmpl_file     = catfile($tmpls_path, 'c_class.ep');
+    my $class = "$args->{controller_namespace}::$class_name";
+    my $c_file = catfile($args->{lib}, class_to_path($class));
+    $template_args
+      = {%$args, class => $class, t => lc $t, columns => $table_columns};
+    $tmpl_file = catfile($tmpls_path, 'c_class.ep');
     $self->render_template_to_file($tmpl_file, $c_file, $template_args);
 
     # Templates
@@ -160,6 +170,15 @@ sub run {
   return $self;
 }
 
+# Returns an array reference of columns from the table
+sub _get_table_columns ($self, $table) {
+  state $db_helper = $self->_db_helper;
+  my $col_info
+    = $self->app->$db_helper->db->dbh->column_info(undef, undef, $table, '%')
+    ->fetchall_arrayref({});
+  my @columns = map { $_->{COLUMN_NAME} } @$col_info;
+  return \@columns;
+}
 
 sub render_template_to_file {
   my ($self, $filename, $path) = (shift, shift, shift);
@@ -322,7 +341,14 @@ Run this command.
 
 =head1 TODO
 
-Please take a look at the file TODO in the root folder of this distribution.
+The work on the features may not go in the same order specified here. Some
+parts may be fully implemented while others may be left for later.
+
+    - Improve documentation. Tests.
+    - Tests for templates (views).
+    - Tests for model classes.
+    - Implement generation of Open API specification out from
+      tables' metadata. Tests.
 
 =head1 AUTHOR
 
