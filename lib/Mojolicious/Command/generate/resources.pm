@@ -227,8 +227,10 @@ Mojolicious::Command::generate::resources - Resources from database for your app
 
 L<Mojolicious::Command::generate::resources> generates directory structure for
 a fully functional
-L<MVC|http://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller>
-set of files, based on existing tables in the database. 
+L<MVC|Mojolicious::Guides::Growing/"Model View Controller">
+L<set of files|Mojolicious::Guides::Growing/"REpresentational State Transfer">,
+and L<routes|Mojolicious::Guides::Routing>
+based on existing tables in your application's database. 
 
 This tool's purpose is to promote
 L<RAD|http://en.wikipedia.org/wiki/Rapid_application_development> by generating
@@ -247,9 +249,9 @@ that you will modify the generated code to suit your specific needs. All the
 generated code is produced from templates which you also can put in your
 application renderer's path and modify to your taste.
 
-The command expects to find one of the commonly used helpers C<pg>, C<mysql>
-C<sqlite>. The supported wrappers are respectively L<Mojo::Pg>, L<Mojo::mysql>
-and L<Mojo::SQLite>.
+The command expects to find and will use one of the commonly used helpers
+C<pg>, C<mysql> C<sqlite>. The supported wrappers are respectively L<Mojo::Pg>,
+L<Mojo::mysql> and L<Mojo::SQLite>.
 
 =head1 OPTIONS
 
@@ -279,14 +281,14 @@ configuration file. Here is an example.
 
 =head2 H|home_dir=s
 
-Defaults to C<app-E<gt>home> (which is MyApp home directory). Used to set the
-root directory to which the files will be dumped.
+Optional. Defaults to C<app-E<gt>home> (which is MyApp home directory). Used to
+set the root directory to which the files will be dumped.
 
 =head2 L|lib=s
 
-Defaults to C<$home-E<gt>mojo_lib_dir> relative to the C<--home_dir> directory.
-If you installed L<MyApp> in some custom path and you wish to generate your
-controllers into e.g. C<site_lib>, set this option.
+Optional. Defaults to C<app-E<gt>home/lib> (relative to the C<--home_dir>
+directory). If you installed L<MyApp> in some custom path and you wish to
+generate your controllers into e.g. C<site_lib>, set this option.
 
 =head2 M|model_namespace=s
 
@@ -295,11 +297,11 @@ L<MyApp::Model>.
 
 =head2 T|templates_root=s
 
-Defaults to C<app-E<gt>renderer-E<gt>paths-E<gt>[0]>. This is usually
-C<templates> directory. If you want to use another directory, do not forget to
-add it to the C<app-E<gt>renderer-E<gt>paths> list in your configuration file.
-Here is how to add a new directory to C<app-E<gt>renderer-E<gt>paths>.
-
+Optional. Defaults to C<app-E<gt>renderer-E<gt>paths-E<gt>[0]>. This is usually
+C<app-E<gt>home/templates> directory. If you want to use another directory, do
+not forget to add it to the C<app-E<gt>renderer-E<gt>paths> list in your
+configuration file. Here is how to add a new directory to
+C<app-E<gt>renderer-E<gt>paths> in C<myapp.conf>.
 
     # Application/site specific templates
     # See /perldoc/Mojolicious/Renderer#paths
