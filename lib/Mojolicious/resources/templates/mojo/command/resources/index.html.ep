@@ -1,20 +1,20 @@
 % my $a = shift;
-%% layout 'blog', title => 'Blog';
+%% layout 'blog', title => 'Blog/<%= ucfirs t$a->{t} %>';
 %% my @columns = qw(<%= join(' ', @{$a->{columns}}) %>); #table columns
 <table>
 %% for my $item (@$<%= $a->{t} %>) {
     <thead>
         <tr>
-    %%for my $colulmn (@columns) {
+    %% for my $column (@columns) {
             <th><%%= uc($column) %></th>
-    %%}
+    %% }
         </tr>
     </thead>
     <tbody>
         <td><%%= link_to $item->{id} => show_<%= $a->{t} %> => {id => $item->{id}} %></td>
-    %%for my $colulmn (@columns[1 .. $#columns]) {
+    %% for my $column (@columns[1 .. $#columns]) {
         <td><%%= $column %></td>
-    %%}
+    %% }
     </tbody>
 %% }
 </table>

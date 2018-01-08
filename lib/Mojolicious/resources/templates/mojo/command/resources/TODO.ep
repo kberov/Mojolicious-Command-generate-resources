@@ -1,5 +1,5 @@
 % my $a = shift;
-# Put the following code where convenienient 
+# Put the following code where convenienient
 # in your startup application method.
 # It may need slight modifications depending
 # on your specific naming conventions.
@@ -11,7 +11,9 @@
 # Routes go after your already defined routes
 
 % for my $r (@{$a->{routes}}) {
-  $r-><%= lc $r->{via}[0] %>('<%= $r->{route} 
+    % for my $via (@{$r->{via}}) {
+  $r-><%= lc $via %>('<%= $r->{route}
     %>')->to('<%= $r->{to} %>')->name('<%= $r->{name} %>');
+    % }
 % }
 
