@@ -29,16 +29,16 @@ has routes => sub {
        name  => "home_$route"
       },
       {
-       route => "/$route/:id",
-       via   => ['GET'],
-       to    => "$route#show",
-       name  => "show_$route"
-      },
-      {
        route => "/$route/create",
        via   => ['GET'],
        to    => "$route#create",
        name  => "create_$route",
+      },
+      {
+       route => "/$route/:id",
+       via   => ['GET'],
+       to    => "$route#show",
+       name  => "show_$route"
       },
       {
        route => "/$route",
