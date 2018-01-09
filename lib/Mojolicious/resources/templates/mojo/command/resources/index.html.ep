@@ -1,5 +1,5 @@
 % my $a = shift;
-%% layout 'blog', title => 'Blog/<%= ucfirs t$a->{t} %>';
+%% layout 'blog', title => 'Blog/<%= ucfirst $a->{t} %>';
 %% my @columns = qw(<%= join(' ', @{$a->{columns}}) %>); #table columns
 <table>
 %% for my $item (@$<%= $a->{t} %>) {
@@ -18,4 +18,4 @@
     </tbody>
 %% }
 </table>
-%%= link_to 'New' => 'create_<%= $a->{t} %>'
+%%= link_to 'New record in table "<%= $a->{t} %>"' => 'create_<%= $a->{t} %>'

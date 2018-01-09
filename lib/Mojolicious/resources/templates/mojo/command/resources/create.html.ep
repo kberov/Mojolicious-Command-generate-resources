@@ -1,4 +1,5 @@
 % my $a = shift;
-%% layout 'blog', title => 'New <%= $a->{t} %>';
-<h2>New <%= $a->{t} %></h2>
+%% my $title = 'New record in table "<%= $a->{t} %>"';
+%% layout 'blog', title => $title;
+<h2><%%= $title %></h2>
 %%= include '<%= $a->{t} %>/_form', caption => 'Create', target => 'store_<%= $a->{t} %>'
