@@ -11,7 +11,7 @@ our $VERSION   = '0.03';
 
 has args => sub { {} };
 has description =>
-  'Generate resources from database tables for your application';
+  'Generate resources from database for your application';
 has usage => sub { shift->extract_usage };
 has _templates_path => '';
 has '_db_helper';
@@ -371,7 +371,7 @@ parts may be fully implemented while others may be left for later.
     - Tests for model classes.
     - Test the generated routes.
     - Implement generation of Open API specification out from
-      tables' metadata.More tests.
+      tables' metadata. More tests.
 
 =head1 AUTHOR
 
@@ -384,11 +384,10 @@ parts may be fully implemented while others may be left for later.
 
 This program is free software licensed under
 
-	The Artistic License (with Aggregation clause)
+  Artistic License 2.0
 
 The full text of the license can be found in the
 LICENSE file included with this module.
-
 
 =head1 SEE ALSO
 
