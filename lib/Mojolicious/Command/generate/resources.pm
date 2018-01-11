@@ -7,7 +7,7 @@ use Getopt::Long qw(GetOptionsFromArray :config auto_abbrev
 File::Spec::Functions->import(qw(catfile catdir));
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.03';
+our $VERSION   = '0.04';
 
 has args => sub { {} };
 has description =>
@@ -319,7 +319,7 @@ L<Github|https://github.com/kberov/Mojolicious-Command-generate-resources>.
 
 =head1 ATTRIBUTES
 
-L<Mojolicious::Command::generate::routes> inherits all attributes from
+L<Mojolicious::Command::generate::resources> inherits all attributes from
 L<Mojolicious::Command> and implements the following new ones.
 
 =head2 args
@@ -340,8 +340,9 @@ Short description of this command, used for the commands list.
   $self->routes();
 
 Returns an ARRAY reference containing routes, prepared after
-C<$self-E<gt>args-E<gt>{tables}>. Suggested Perl code for the routes is dumped on
-STDOUT so you can copy and paste into your application code.
+C<$self-E<gt>args-E<gt>{tables}>. Suggested Perl code for the routes is dumped
+in a file named TODO in C<--homedir> so you can copy and paste into your
+application code.
 
 =head2 usage
 
@@ -357,7 +358,7 @@ L<Mojolicious::Command> and implements the following new ones.
 
 =head2 run
 
-  Ado::Command::generate::crud->new(app=>$app)->run(@ARGV);
+  Mojolicious::Command::generate::resources->new(app=>$app)->run(@ARGV);
 
 Run this command.
 

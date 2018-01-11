@@ -104,7 +104,7 @@ Please report bugs, contribute and make merge requests on
 
 # ATTRIBUTES
 
-[Mojolicious::Command::generate::routes](https://metacpan.org/pod/Mojolicious::Command::generate::routes) inherits all attributes from
+[Mojolicious::Command::generate::resources](https://metacpan.org/pod/Mojolicious::Command::generate::resources) inherits all attributes from
 [Mojolicious::Command](https://metacpan.org/pod/Mojolicious::Command) and implements the following new ones.
 
 ## args
@@ -125,8 +125,9 @@ Short description of this command, used for the commands list.
     $self->routes();
 
 Returns an ARRAY reference containing routes, prepared after
-`$self->args->{tables}`. Suggested Perl code for the routes is dumped on
-STDOUT so you can copy and paste into your application code.
+`$self->args->{tables}`. Suggested Perl code for the routes is dumped
+in a file named TODO in `--homedir` so you can copy and paste into your
+application code.
 
 ## usage
 
@@ -142,7 +143,7 @@ Usage information for this command, used for the help screen.
 
 ## run
 
-    Ado::Command::generate::crud->new(app=>$app)->run(@ARGV);
+    Mojolicious::Command::generate::resources->new(app=>$app)->run(@ARGV);
 
 Run this command.
 
@@ -156,7 +157,7 @@ parts may be fully implemented while others may be left for later.
     - Tests for model classes.
     - Test the generated routes.
     - Implement generation of Open API specification out from
-      tables' metadata.More tests.
+      tables' metadata. More tests.
 
 # AUTHOR
 
@@ -169,7 +170,7 @@ parts may be fully implemented while others may be left for later.
 
 This program is free software licensed under
 
-        The Artistic License (with Aggregation clause)
+    Artistic License 2.0
 
 The full text of the license can be found in the
 LICENSE file included with this module.
