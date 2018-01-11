@@ -31,10 +31,12 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
   for (path('t/blog')->list_tree({dir => 1})->each) {
     my $new_path = $_->to_array;
     splice @$new_path, 0, 2;    #t/blog/blog.conf -> blog.conf
-    unshift @$new_path, $ENV{MOJO_HOME};
+    unshift @$new_path, $ENV{MOJO_HOME}; #blog.conf -> $ENV{MOJO_HOME}/blog.conf
     path(catdir(@$new_path))->make_path({mode => 0700}) if -d $_;
     $_->copy_to(catdir(@$new_path)) if -f $_;
   }
+
+  # Run the command through the app.
   require Blog;
   $buffer = '';
   open my $handle, '>', \$buffer;
@@ -65,8 +67,10 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
   like($buffer, qr{\[mkdir\].+?templates/users}, "made dir templates/users");
   like($buffer,
        qr{\[write\].+?templates/users/index.html.ep},
-       "made dir templates/users/index.html.ep ... etc");
+       "written templates/users/index.html.ep");
 
+
+  like($buffer, qr{\[write\].+?/blog/TODO}, "written /blog/TODO ... etc");
   my $home = $cm->app->home;
 
   # Default arguments
@@ -83,5 +87,10 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
             'proper default arguments'
            );
 }
+
+# TODO: Make requests to the created routes
+{
+
+};
 done_testing();
 

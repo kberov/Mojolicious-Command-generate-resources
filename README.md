@@ -11,6 +11,7 @@ Mojolicious::Command::generate::resources - Resources from database for your app
 
 # DESCRIPTION
 
+_This is an early release._
 [Mojolicious::Command::generate::resources](https://metacpan.org/pod/Mojolicious::Command::generate::resources) generates directory structure for
 a fully functional
 [MVC](https://metacpan.org/pod/Mojolicious::Guides::Growing#Model-View-Controller)
@@ -153,8 +154,9 @@ parts may be fully implemented while others may be left for later.
     - Improve documentation. Tests.
     - Tests for templates (views).
     - Tests for model classes.
+    - Test the generated routes.
     - Implement generation of Open API specification out from
-      tables' metadata. Tests.
+      tables' metadata.More tests.
 
 # AUTHOR
 
