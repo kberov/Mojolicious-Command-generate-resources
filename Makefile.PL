@@ -8,11 +8,12 @@ WriteMakefile(
   NAME => 'Mojolicious::Command::generate::resources',
   VERSION_FROM =>
     'lib/Mojolicious/Command/generate/resources.pm',    # finds \$VERSION
-  AUTHOR    => 'Красимир Беров (berov@cpan.org)',
-  ABSTRACT  => 'Generate resources from database for your application',
-  PREREQ_PM => {'Mojolicious' => 7.60,},
-
-  META_MERGE => {
+  AUTHOR        => 'Красимир Беров (berov@cpan.org)',
+  ABSTRACT_FROM => 'lib/Mojolicious/Command/generate/resources.pm',
+  PREREQ_PM     => {'Mojolicious' => '7.60'},
+  TEST_REQUIRES => {'Mojo::SQLite' => '3.000'},
+  test          => {TESTS => 't/*.t'},
+  META_MERGE    => {
     dynamic_config => 0,
     'meta-spec'    => {version => 2},
     no_index       => {directory => ['t']},

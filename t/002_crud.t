@@ -89,8 +89,5 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
 }
 
 # TODO: Make requests to the created routes
-{
-
-};
 done_testing();
 

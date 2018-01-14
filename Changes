@@ -19,3 +19,8 @@ Revision history for Perl module Mojolicious::Command::generate::routes
 0.04 Thu Jan 11 22:48:38 CET 2018
     - Fixed inconsistencies in the documentation.
 
+0.05 Sun Jan 14 23:50:40 CET 2018
+    - Added Mojo::SQLite to the TEST_REQURES section in Makefile.PL
+    - Added pod and manifest tests.
+    - Made path to test.db more specific.
+

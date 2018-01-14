@@ -31,3 +31,5 @@ t/blog/templates/posts/create.html.ep
 t/blog/templates/posts/edit.html.ep
 t/blog/templates/posts/index.html.ep
 t/blog/templates/posts/show.html.ep
+t/manifest.t
+t/pod.t
