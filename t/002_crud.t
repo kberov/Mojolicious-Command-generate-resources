@@ -55,22 +55,27 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
   local *STDOUT = $handle;
   my $cm = Mojolicious::Command::generate::resources->new(app => Blog->new)
     ->run('-t' => 'users,groups');
+  my $sep = '\\/';
   like($buffer,
-       qr{\[exist\].+?lib/Blog/Controller},
+       qr{\[exist\].+?lib[$sep]Blog[$sep]Controller},
        "Folder lib/Blog/Controller exists.");
   like($buffer,
-       qr{\[write\].+?lib/Blog/Controller/Users.pm},
+       qr{\[write\].+?lib[$sep]Blog[$sep]Controller[$sep]Users.pm},
        "written lib/Blog/Controller/Users.pm");
   like($buffer,
-       qr{\[write\].+?lib/Blog/Model/Users.pm},
+       qr{\[write\].+?lib[$sep]Blog[$sep]Model[$sep]Users.pm},
        "written lib/Blog/Model/Users.pm");
-  like($buffer, qr{\[mkdir\].+?templates/users}, "made dir templates/users");
   like($buffer,
-       qr{\[write\].+?templates/users/index.html.ep},
+       qr{\[mkdir\].+?templates[$sep]users},
+       "made dir templates/users");
+  like($buffer,
+       qr{\[write\].+?templates[$sep]users[$sep]index.html.ep},
        "written templates/users/index.html.ep");
 
 
-  like($buffer, qr{\[write\].+?/blog/TODO}, "written /blog/TODO ... etc");
+  like($buffer,
+       qr{\[write\].+?[$sep]blog[$sep]TODO},
+       "written /blog/TODO ... etc");
   my $home = $cm->app->home;
 
   # Default arguments

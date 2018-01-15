@@ -7,7 +7,7 @@ use Getopt::Long qw(GetOptionsFromArray :config auto_abbrev
 File::Spec::Functions->import(qw(catfile catdir));
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.05';
+our $VERSION   = '0.06';
 
 has args => sub { {} };
 has description     => 'Generate resources from database for your application';
