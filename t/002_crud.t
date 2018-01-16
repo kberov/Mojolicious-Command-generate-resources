@@ -47,13 +47,16 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
        "Command is loaded and shows help message");
 }
 
-# Default settings
+# Default options + one custom generator template (show.html.ep)
 {
 
   $buffer = '';
   open my $handle, '>', \$buffer;
   local *STDOUT = $handle;
-  my $cm = Mojolicious::Command::generate::resources->new(app => Blog->new)
+  my $blog = Blog->new;
+  push @{$blog->renderer->paths}, $blog->home->rel_file('resources_templates');
+
+  my $cm = Mojolicious::Command::generate::resources->new(app => $blog)
     ->run('-t' => 'users,groups');
   my $sep = '\\/';
   like($buffer,
@@ -82,10 +85,10 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
   is_deeply(
             $cm->args,
             {
-             lib            => catdir($home, 'lib'),
-             templates_root => catdir($home, 'templates'),
-             home_dir       => $home,
-             tables         => [qw(users groups)],
+             lib                  => $home->rel_file('lib'),
+             templates_root       => $home->rel_file('templates'),
+             home_dir             => $home,
+             tables               => [qw(users groups)],
              controller_namespace => $cm->app->routes->namespaces->[0],
              model_namespace      => ref($cm->app) . '::Model',
             },
