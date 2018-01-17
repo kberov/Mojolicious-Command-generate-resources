@@ -7,7 +7,7 @@ use Getopt::Long qw(GetOptionsFromArray :config auto_abbrev
 File::Spec::Functions->import(qw(catfile catdir));
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.07';
+our $VERSION   = '0.08';
 
 has args => sub { {} };
 has description     => 'Generate resources from database for your application';
@@ -67,13 +67,12 @@ has routes => sub {
   return $_[0]->{routes};
 };
 
-my $_начевамъ = sub {
-  my ($азъ, @args) = @_;
+my $_начевамъ = sub ($азъ, @options) {
   return $азъ if $азъ->{_initialised};
   my $args = $азъ->args({tables => []})->args;
 
   GetOptionsFromArray(
-    \@args,
+    \@options,
     'C|controller_namespace=s' => \$args->{controller_namespace},
     'L|lib=s'                  => \$args->{lib},
     'M|model_namespace=s'      => \$args->{model_namespace},
@@ -129,18 +128,17 @@ MSG
 
 # Returns the full path to the first found template.
 # See http://localhost:3000/perldoc/Mojolicious/Renderer#template_path
-sub _template_path {
-  my ($self, $template) = @_;
+sub _template_path ($self, $template) {
   state $paths      = $self->app->renderer->paths;
   state $tmpls_path = $self->_templates_path;
   -r and return $_ for map { catfile($_, $template) } @$paths, $tmpls_path;
   return undef;
 }
 
-sub run {
-  my ($self) = shift->$_начевамъ(@_);
-  my $args   = $self->args;
-  my $app    = $self->app;
+sub run ($self, %options) {
+  $self->$_начевамъ(%options);
+  my $args = $self->args;
+  my $app  = $self->app;
 
   my $wrapper_helpers = '';
   for my $t (@{$args->{tables}}) {
@@ -207,9 +205,8 @@ sub _get_table_columns ($self, $table) {
   return \@columns;
 }
 
-sub render_template_to_file {
-  my ($self, $filename, $path) = (shift, shift, shift);
-  my $out = Mojo::Template->new->render_file($filename, @_);
+sub render_template_to_file ($self, $filename, $path, $args) {
+  my $out = Mojo::Template->new->render_file($filename, $args);
   return $self->write_file($path, $out);
 }
 

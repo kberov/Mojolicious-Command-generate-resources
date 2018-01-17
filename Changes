@@ -32,3 +32,6 @@ Revision history for Perl module Mojolicious::Command::generate::routes
     - Templates' folder can be copied and pushed to app->renderer->paths for
       customisation.
     - Strictly require Perl 5.20.1
+
+0.08 Wed Jan 17 23:12:15 CET 2018
+    - Using signatures wherever feasible.
