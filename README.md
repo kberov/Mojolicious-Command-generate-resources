@@ -1,6 +1,6 @@
 # NAME
 
-Mojolicious::Command::generate::resources - Resources from database for your application
+Mojolicious::Command::generate::resources - Resources from database tables for your application
 
 # SYNOPSIS
 
@@ -33,8 +33,9 @@ creating, updating and deleting records from the tables you specified on the
 command-line. The generated code is just boilerplate to give you a jump start,
 so you can concentrate on writing your business-specific code. It is assumed
 that you will modify the generated code to suit your specific needs. All the
-generated code is produced from templates which you also can put in your
-application renderer's path and modify to your taste.
+generated code is produced from templates. You can copy the folder with the
+templates, push it to `@{$app->renderer->paths}` and modify to your
+taste. Please look into the `t/blog` folder of this distribution for examples.
 
 The command expects to find and will use one of the commonly used helpers
 `pg`, `mysql` `sqlite`. The supported wrappers are respectively [Mojo::Pg](https://metacpan.org/pod/Mojo::Pg),
@@ -153,6 +154,7 @@ The work on the features may not go in the same order specified here. Some
 parts may be fully implemented while others may be left for later.
 
     - Improve documentation. Tests.
+    - Improve temlates to show more possibilities.
     - Tests for templates (views).
     - Tests for model classes.
     - Test the generated routes.

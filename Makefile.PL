@@ -12,7 +12,13 @@ WriteMakefile(
   PREREQ_PM     => {'Mojolicious' => '7.60', perl => '5.020001'},
   TEST_REQUIRES => {'Mojo::SQLite' => '3.000'},
   test          => {TESTS          => 't/*.t'},
-  META_MERGE    => {
+  clean         => {FILES          => "*.gz *.zip"},
+  dist          => {
+    PREOP =>
+      qq'pod2text lib/Mojolicious/Command/generate/resources.pm > README;'
+      . qq'pod2markdown lib/Mojolicious/Command/generate/resources.pm > README.md'
+  },
+  META_MERGE => {
     dynamic_config => 0,
     'meta-spec'    => {version => 2},
     no_index       => {directory => ['t']},

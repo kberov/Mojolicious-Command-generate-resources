@@ -7,10 +7,10 @@ use Getopt::Long qw(GetOptionsFromArray :config auto_abbrev
 File::Spec::Functions->import(qw(catfile catdir));
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.08';
+our $VERSION   = '0.09';
 
 has args => sub { {} };
-has description     => 'Generate resources from database for your application';
+has description     => 'Generate resources from database tables for your application';
 has usage           => sub { shift->extract_usage };
 has _templates_path => '';
 has '_db_helper';
@@ -216,7 +216,7 @@ sub render_template_to_file ($self, $filename, $path, $args) {
 
 =head1 NAME
 
-Mojolicious::Command::generate::resources - Resources from database for your application
+Mojolicious::Command::generate::resources - Resources from database tables for your application
 
 =head1 SYNOPSIS
 
@@ -373,7 +373,7 @@ The work on the features may not go in the same order specified here. Some
 parts may be fully implemented while others may be left for later.
 
     - Improve documentation. Tests.
-    - Improve temlates to show more posibilities.
+    - Improve temlates to show more possibilities.
     - Tests for templates (views).
     - Tests for model classes.
     - Test the generated routes.

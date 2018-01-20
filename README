@@ -1,6 +1,6 @@
 NAME
-    Mojolicious::Command::generate::resources - Resources from database for
-    your application
+    Mojolicious::Command::generate::resources - Resources from database
+    tables for your application
 
 SYNOPSIS
       Usage: APPLICATION generate resources [OPTIONS]
@@ -28,8 +28,9 @@ DESCRIPTION
     give you a jump start, so you can concentrate on writing your
     business-specific code. It is assumed that you will modify the generated
     code to suit your specific needs. All the generated code is produced
-    from templates which you also can put in your application renderer's
-    path and modify to your taste.
+    from templates. You can copy the folder with the templates, push it to
+    "@{$app->renderer->paths}" and modify to your taste. Please look into
+    the "t/blog" folder of this distribution for examples.
 
     The command expects to find and will use one of the commonly used
     helpers "pg", "mysql" "sqlite". The supported wrappers are respectively
@@ -133,6 +134,7 @@ TODO
     Some parts may be fully implemented while others may be left for later.
 
         - Improve documentation. Tests.
+        - Improve temlates to show more possibilities.
         - Tests for templates (views).
         - Tests for model classes.
         - Test the generated routes.
