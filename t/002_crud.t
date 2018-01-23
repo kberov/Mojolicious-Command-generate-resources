@@ -67,16 +67,13 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
   like($buffer,
        qr{\[write\].+?Model[\\/]Users.pm},
        "written lib/Blog/Model/Users.pm");
-  like($buffer,
-       qr{\[mkdir\].+?templates[\\/]users},
+  like($buffer, qr{\[mkdir\].+?templates[\\/]users},
        "made dir templates/users");
   like($buffer,
        qr{\[write\].+?users[\\/]index.html.ep},
        "written templates/users/index.html.ep");
 
-  like($buffer,
-       qr{\[write\].+?blog[\\/]TODO},
-       "written /blog/TODO ... etc");
+  like($buffer, qr{\[write\].+?blog[\\/]TODO}, "written /blog/TODO ... etc");
   my $home = $cm->app->home;
 
   # Default arguments

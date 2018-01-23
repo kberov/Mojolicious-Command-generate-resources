@@ -12,7 +12,7 @@ WriteMakefile(
   PREREQ_PM     => {'Mojolicious' => '7.60', perl => '5.020001'},
   TEST_REQUIRES => {'Mojo::SQLite' => '3.000'},
   test          => {TESTS          => 't/*.t'},
-  clean         => {FILES          => "*.gz *.zip"},
+  clean         => {FILES          => 'Mojolicious-Command-*'},
   dist          => {
     PREOP =>
       qq'pod2text lib/Mojolicious/Command/generate/resources.pm > README;'

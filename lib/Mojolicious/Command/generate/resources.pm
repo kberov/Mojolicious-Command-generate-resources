@@ -10,8 +10,13 @@ our $AUTHORITY = 'cpan:BEROV';
 our $VERSION   = '0.09';
 
 has args => sub { {} };
-has description     => 'Generate resources from database tables for your application';
-has usage           => sub { shift->extract_usage };
+has description => sub {
+  state $bytes   = Mojo::File->new(__FILE__)->slurp();
+  state $package = __PACKAGE__;
+  $bytes = ($bytes =~ /$package\s+-\s+(.+)\n/ && $1);
+  return $bytes;
+};
+has usage => sub { shift->extract_usage };
 has _templates_path => '';
 has '_db_helper';
 
@@ -151,10 +156,11 @@ sub run ($self, %options) {
     my $table_columns = $self->_get_table_columns($t);
     my $template_args = {
                          %$args,
-                         class     => $mclass,
-                         t         => lc $t,
-                         db_helper => $self->_db_helper,
-                         columns   => $table_columns,
+                         class       => $mclass,
+                         t           => lc $t,
+                         db_helper   => $self->_db_helper,
+                         columns     => $table_columns,
+                         column_info => $self->_column_info($t),
                         };
     my $tmpl_file = $self->_template_path('m_class.ep');
     $self->render_template_to_file($tmpl_file, $m_file, $template_args);
@@ -162,8 +168,7 @@ sub run ($self, %options) {
     # Controllers
     my $class = "$args->{controller_namespace}::$class_name";
     my $c_file = catfile($args->{lib}, class_to_path($class));
-    $template_args
-      = {%$args, class => $class, t => lc $t, columns => $table_columns};
+    $template_args = {%$template_args, class => $class};
     $tmpl_file = $self->_template_path('c_class.ep');
     $self->render_template_to_file($tmpl_file, $c_file, $template_args);
 
@@ -179,8 +184,7 @@ sub run ($self, %options) {
     }
 
     # Helpers
-    $template_args
-      = {%$args, t => lc $t, db_helper => $self->_db_helper, class => $mclass};
+    $template_args = {%$template_args, class => $mclass};
     $tmpl_file = $self->_template_path('helper.ep');
     $wrapper_helpers
       .= Mojo::Template->new->render_file($tmpl_file, $template_args);
@@ -197,12 +201,17 @@ sub run ($self, %options) {
 
 # Returns an array reference of columns from the table
 sub _get_table_columns ($self, $table) {
-  state $db_helper = $self->_db_helper;
-  my $col_info
-    = $self->app->$db_helper->db->dbh->column_info(undef, undef, $table, '%')
-    ->fetchall_arrayref({});
-  my @columns = map { $_->{COLUMN_NAME} } @$col_info;
+  my @columns = map { $_->{COLUMN_NAME} } @{$self->_column_info($table)};
   return \@columns;
+}
+
+sub _column_info ($self, $table) {
+  state $tci       = {};                  #tables column info
+  state $db_helper = $self->_db_helper;
+  $tci->{$table}
+    //= $self->app->$db_helper->db->dbh->column_info(undef, undef, $table, '%')
+    ->fetchall_arrayref({});
+  return $tci->{$table};
 }
 
 sub render_template_to_file ($self, $filename, $path, $args) {
@@ -216,7 +225,7 @@ sub render_template_to_file ($self, $filename, $path, $args) {
 
 =head1 NAME
 
-Mojolicious::Command::generate::resources - Resources from database tables for your application
+Mojolicious::Command::generate::resources - Generate M, V & C from database tables
 
 =head1 SYNOPSIS
 
