@@ -38,9 +38,11 @@ Revision history for Perl module Mojolicious::Command::generate::routes
     - Fixed failing tests on Windows again.
     - Small change in show.html.ep
 
-0.09 Wed Jan 24 00:20:27 CET 2018
+
+0.09 Wed Jan 24 23:48:14 CET 2018
     - Improved Makefile.PL. Automated generation of README and README.md.
     - Attribute 'description' now extracts description form POD.
     - Optimised template arguments construction while generating the set of MVC
       files for a table.
     - Using DBI::column_info for form fields generation and validation.
+    - Using Test::Perl::Critic.

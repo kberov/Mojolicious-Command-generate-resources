@@ -72,9 +72,9 @@ has routes => sub {
   return $_[0]->{routes};
 };
 
-my $_начевамъ = sub ($азъ, @options) {
-  return $азъ if $азъ->{_initialised};
-  my $args = $азъ->args({tables => []})->args;
+my $_init = sub ($self, @options) {
+  return $self if $self->{_initialised};
+  my $args = $self->args({tables => []})->args;
 
   GetOptionsFromArray(
     \@options,
@@ -89,9 +89,9 @@ my $_начевамъ = sub ($азъ, @options) {
                      );
 
   @{$args->{tables}} = split(/\s*?\,\s*?/, join(',', @{$args->{tables}}));
-  Carp::croak $азъ->usage unless scalar @{$args->{tables}};
+  Carp::croak $self->usage unless scalar @{$args->{tables}};
 
-  my $app = $азъ->app;
+  my $app = $self->app;
   $args->{controller_namespace} //= $app->routes->namespaces->[0];
   $args->{model_namespace}      //= ref($app) . '::Model';
   $args->{home_dir}             //= $app->home;
@@ -104,7 +104,7 @@ my $_начевамъ = sub ($азъ, @options) {
     my $templates_path
       = catdir($path, 'Mojolicious/resources/templates/mojo/command/resources');
     if (-d $templates_path) {
-      $азъ->_templates_path($templates_path);
+      $self->_templates_path($templates_path);
       last;
     }
   }
@@ -113,11 +113,11 @@ my $_начевамъ = sub ($азъ, @options) {
   my @db_helpers = qw(sqlite pg mysql);
   for (@db_helpers) {
     if ($app->renderer->get_helper($_)) {
-      $азъ->_db_helper($_);
+      $self->_db_helper($_);
       last;
     }
   }
-  if (!$азъ->_db_helper) {
+  if (!$self->_db_helper) {
     die <<'MSG';
 Guessing the used database wrapper helper failed. One of (@db_helpers) is
 required. This application does not use any of the supported database helpers.
@@ -126,9 +126,9 @@ Aborting!..
 MSG
   }
 
-  $азъ->{_initialised} = 1;
+  $self->{_initialised} = 1;
 
-  return $азъ;
+  return $self;
 };
 
 # Returns the full path to the first found template.
@@ -137,11 +137,11 @@ sub _template_path ($self, $template) {
   state $paths      = $self->app->renderer->paths;
   state $tmpls_path = $self->_templates_path;
   -r and return $_ for map { catfile($_, $template) } @$paths, $tmpls_path;
-  return undef;
+  return;
 }
 
 sub run ($self, %options) {
-  $self->$_начевамъ(%options);
+  $self->$_init(%options);
   my $args = $self->args;
   my $app  = $self->app;
 
@@ -178,9 +178,9 @@ sub run ($self, %options) {
 
     my @views = qw(index create show edit _form);
     for my $v (@views) {
-      my $t_file = catfile($template_root, $template_dir, $v . '.html.ep');
-      my $tmpl_file = $self->_template_path($v . '.html.ep');
-      $self->render_template_to_file($tmpl_file, $t_file, $template_args);
+      my $to_t_file = catfile($template_root, $template_dir, $v . '.html.ep');
+      my $tmpl = $self->_template_path($v . '.html.ep');
+      $self->render_template_to_file($tmpl, $to_t_file, $template_args);
     }
 
     # Helpers
