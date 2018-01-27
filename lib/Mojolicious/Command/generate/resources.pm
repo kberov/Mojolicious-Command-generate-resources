@@ -168,7 +168,11 @@ sub run ($self, %options) {
     # Controllers
     my $class = "$args->{controller_namespace}::$class_name";
     my $c_file = catfile($args->{lib}, class_to_path($class));
-    $template_args = {%$template_args, class => $class};
+    $template_args = {
+                      %$template_args,
+                      class      => $class,
+                      validation => $self->generate_validation($t)
+                     };
     $tmpl_file = $self->_template_path('c_class.ep');
     $self->render_template_to_file($tmpl_file, $c_file, $template_args);
 
@@ -176,12 +180,17 @@ sub run ($self, %options) {
     my $template_dir  = decamelize($class_name);
     my $template_root = $args->{templates_root};
 
-    my @views = qw(index create show edit _form);
+    my @views = qw(index create show edit);
     for my $v (@views) {
       my $to_t_file = catfile($template_root, $template_dir, $v . '.html.ep');
       my $tmpl = $self->_template_path($v . '.html.ep');
       $self->render_template_to_file($tmpl, $to_t_file, $template_args);
     }
+    $tmpl_file = $self->_template_path('_form.html.ep');
+    my $to_t_file = catfile($template_root, $template_dir, '_form.html.ep');
+    $template_args
+      = {%$template_args, fields => $self->generate_formfields($t)};
+    $self->render_template_to_file($tmpl_file, $to_t_file, $template_args);
 
     # Helpers
     $template_args = {%$template_args, class => $mclass};
@@ -217,6 +226,63 @@ sub _column_info ($self, $table) {
 sub render_template_to_file ($self, $filename, $path, $args) {
   my $out = Mojo::Template->new->render_file($filename, $args);
   return $self->write_file($path, $out);
+}
+
+sub generate_formfields ($self, $table) {
+  my $fields = '';
+  for my $col (@{$self->_column_info($table)}) {
+    my $name     = $col->{COLUMN_NAME};
+    my $required = $col->{NULLABLE} ? '' : 'required => 1,';
+    my $size     = $col->{COLUMN_SIZE} ? "size => $col->{COLUMN_SIZE}" : '';
+    if ($name eq 'id') {
+      $fields .= qq|
+  %=hidden_field $name => stash->{id} if (\$action ne 'create');
+|;
+      next;
+    }
+    if ($col->{TYPE_NAME} =~ /char/i && $col->{COLUMN_SIZE} < 256) {
+      $fields .= qq|
+  <label for="$name">${\ucfirst($name)}</label>
+  %= text_field $name => '', $required $size\n<br />|;
+      next;
+    }
+    if ($col->{TYPE_NAME} =~ /INT|FLOAT|DOUBLE|DECIMAL/i) {
+      $fields .= qq|
+  <label for="$name">${\ucfirst($name)}</label>
+  %= number_field $name => '', $required $size\n<br />|;
+      next;
+    }
+  }
+  return $fields;
+}
+
+sub generate_validation ($self, $table) {
+  my $fields = '';
+  for my $col (@{$self->_column_info($table)}) {
+    my $name     = $col->{COLUMN_NAME};
+    my $required = $col->{NULLABLE} ? 0 : 1;
+    my $size     = $col->{COLUMN_SIZE} ? "size => $col->{COLUMN_SIZE}" : '';
+    if ($name eq 'id') {
+      $fields
+        .= qq|\$validation->required('id') if \$c->stash->{action} ne 'create';\n|;
+      next;
+    }
+
+    $fields .= '$validation->';
+    $fields
+      .= $required
+      ? qq|required('$name', 'trim')|
+      : qq|optional('$name', 'trim')|;
+    if ($col->{TYPE_NAME} =~ /char/i && $col->{COLUMN_SIZE} < 256) {
+      $fields .= "->size(0, $col->{COLUMN_SIZE})";
+    }
+
+    if ($col->{TYPE_NAME} =~ /INT|FLOAT|DOUBLE|DECIMAL/i) {
+      $fields .= q|->like(qr/\d+(\.\d+)?/)|;
+    }
+    $fields .= ';' . $/;
+  }
+  return $fields;
 }
 
 1;
@@ -375,6 +441,29 @@ L<Mojolicious::Command> and implements the following new ones.
   Mojolicious::Command::generate::resources->new(app=>$app)->run(@ARGV);
 
 Run this command.
+
+=head2 render_template_to_file
+
+Renders a template fom a file to a file using L<Mojo::Template>.  Parameters: C<$tmpl_file> -
+full path tho the template file; C<$target_file> - full path to the file to be
+written; C<$template_args> - a hash reference containing the argumaents to the
+template. See also L<Mojolicious::Command/render_to_file>.
+
+    $self->render_template_to_file($tmpl_file, $target_file, $template_args);
+
+=head2 generate_formfields
+
+Generates form-fields from columns information found in the repective table and
+action. Possible actions are C<create> and C<update>. The result is put
+into C<_form.html.ep>. The programmer can then modify the generated form-fields.
+
+    $form_fields = $self->generate_formfields('user');
+
+=head2 generate_validation
+
+Generates code for the C<_validation> method in the respective controler.
+
+    $validation_code = $self->generate_validation($table);
 
 =head1 TODO
 

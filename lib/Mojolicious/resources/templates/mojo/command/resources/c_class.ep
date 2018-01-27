@@ -73,9 +73,7 @@ sub remove {
 sub _validation($c) {
   my $validation = $c->validation;
   # Add validation rules for the record to be stored in the database
-  # $validation->required('title');
-  # $validation->required('body');
-
+%= $a->{validation}
   return $validation;
 }
 
