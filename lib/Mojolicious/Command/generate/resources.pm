@@ -11,10 +11,14 @@ our $VERSION   = '0.09';
 
 has args => sub { {} };
 has description => sub {
+  if ($_[1]) {
+    $_[0]->{description} = $_[1];
+    return $_[0];
+  }
+  return $_[0]->{description} if $_[0]->{description};
   state $bytes   = Mojo::File->new(__FILE__)->slurp();
   state $package = __PACKAGE__;
-  $bytes = ($bytes =~ /$package\s+-\s+(.+)\n/ && $1);
-  return $bytes;
+  return $_[0]->{description} = ($bytes =~ /$package\s+-\s+(.+)\n/ && $1);
 };
 has usage => sub { shift->extract_usage };
 has _templates_path => '';
@@ -210,7 +214,7 @@ sub run ($self, %options) {
 
 # Returns an array reference of columns from the table
 sub _get_table_columns ($self, $table) {
-  my @columns = map { $_->{COLUMN_NAME} } @{$self->_column_info($table)};
+  my @columns = map ({ $_->{COLUMN_NAME} } @{$self->_column_info($table)});
   return \@columns;
 }
 
@@ -235,21 +239,31 @@ sub generate_formfields ($self, $table) {
     my $required = $col->{NULLABLE} ? '' : 'required => 1,';
     my $size     = $col->{COLUMN_SIZE} ? "size => $col->{COLUMN_SIZE}" : '';
     if ($name eq 'id') {
-      $fields .= qq|
-  %=hidden_field $name => stash->{id} if (\$action ne 'create');
-|;
+      $fields
+        .= qq|\n%=hidden_field '$name' => \$${table}->{id} if (\$action ne 'create');\n|;
       next;
     }
     if ($col->{TYPE_NAME} =~ /char/i && $col->{COLUMN_SIZE} < 256) {
-      $fields .= qq|
-  <label for="$name">${\ucfirst($name)}</label>
-  %= text_field $name => '', $required $size\n<br />|;
+      $fields .= <<"QQ";
+  %= label_for $name =>'${\ucfirst($name)}'\n<br />
+  %= text_field $name => \$${table}->{$name}, $required $size\n<br />
+QQ
+      next;
+    }
+    elsif (   $col->{TYPE_NAME} =~ /text/i
+           || $col->{TYPE_NAME} =~ /char/i && $col->{COLUMN_SIZE} > 255)
+    {
+      $fields .= <<"QQ";
+  %= label_for '$name' => '${\ucfirst($name)}'\n<br />
+  %= text_area '$name' => \$${table}->{$name}, $required $size\n<br />
+QQ
       next;
     }
     if ($col->{TYPE_NAME} =~ /INT|FLOAT|DOUBLE|DECIMAL/i) {
-      $fields .= qq|
-  <label for="$name">${\ucfirst($name)}</label>
-  %= number_field $name => '', $required $size\n<br />|;
+      $fields .= <<"QQ";
+  %= label_for $name => '${\ucfirst($name)}'\n<br />
+  %= number_field $name => \$${table}->{$name}, $required $size\n<br />
+QQ
       next;
     }
   }
@@ -263,16 +277,14 @@ sub generate_validation ($self, $table) {
     my $required = $col->{NULLABLE} ? 0 : 1;
     my $size     = $col->{COLUMN_SIZE} ? "size => $col->{COLUMN_SIZE}" : '';
     if ($name eq 'id') {
-      $fields
-        .= qq|\$validation->required('id') if \$c->stash->{action} ne 'create';\n|;
+      $fields .= qq|\$v->required('id') if \$c->stash->{action} ne 'store';\n|;
       next;
     }
 
-    $fields .= '$validation->';
     $fields
       .= $required
-      ? qq|required('$name', 'trim')|
-      : qq|optional('$name', 'trim')|;
+      ? qq|\$v->required('$name', 'trim')|
+      : qq|\$v->optional('$name', 'trim')|;
     if ($col->{TYPE_NAME} =~ /char/i && $col->{COLUMN_SIZE} < 256) {
       $fields .= "->size(0, $col->{COLUMN_SIZE})";
     }
@@ -300,10 +312,12 @@ Mojolicious::Command::generate::resources - Generate M, V & C from database tabl
     my_app.pl generate help resources # help with all available options
     my_app.pl generate resources --tables users,groups
 
+=head1 PERL REQUIREMENTS
+
+This command uses L<feature/signatures>, therefore Perl 5.20 is required.
 
 =head1 DESCRIPTION
 
-I<This is an early release.>
 L<Mojolicious::Command::generate::resources> generates directory structure for
 a fully functional
 L<MVC|Mojolicious::Guides::Growing/"Model View Controller">
@@ -444,37 +458,33 @@ Run this command.
 
 =head2 render_template_to_file
 
-Renders a template fom a file to a file using L<Mojo::Template>.  Parameters: C<$tmpl_file> -
-full path tho the template file; C<$target_file> - full path to the file to be
-written; C<$template_args> - a hash reference containing the argumaents to the
-template. See also L<Mojolicious::Command/render_to_file>.
+Renders a template from a file to a file using L<Mojo::Template>. Parameters:
+C<$tmpl_file> - full path tho the template file; C<$target_file> - full path to
+the file to be written; C<$template_args> - a hash reference containing the
+arguments to the template. See also L<Mojolicious::Command/render_to_file>.
 
     $self->render_template_to_file($tmpl_file, $target_file, $template_args);
 
 =head2 generate_formfields
 
-Generates form-fields from columns information found in the repective table and
-action. Possible actions are C<create> and C<update>. The result is put
-into C<_form.html.ep>. The programmer can then modify the generated form-fields.
+Generates form-fields from columns information found in the repective table.
+The result is put into C<_form.html.ep>. The programmer can then modify the
+generated form-fields.
 
-    $form_fields = $self->generate_formfields('user');
+    $form_fields = $self->generate_formfields($table_name);
 
 =head2 generate_validation
 
 Generates code for the C<_validation> method in the respective controler.
 
-    $validation_code = $self->generate_validation($table);
+    $validation_code = $self->generate_validation($table_name);
 
 =head1 TODO
 
 The work on the features may not go in the same order specified here. Some
 parts may be fully implemented while others may be left for later.
 
-    - Improve documentation. Tests.
-    - Improve temlates to show more possibilities.
-    - Tests for templates (views).
-    - Tests for model classes.
-    - Test the generated routes.
+    - Improve documentation.
     - Implement generation of Open API specification out from
       tables' metadata. More tests.
 
@@ -483,7 +493,6 @@ parts may be fully implemented while others may be left for later.
     Красимир Беров
     CPAN ID: BEROV
     berov@cpan.org
-    http://i-can.eu
 
 =head1 COPYRIGHT
 

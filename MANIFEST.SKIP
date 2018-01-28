@@ -61,7 +61,7 @@
 ^MYMETA\.
 
 # Avoid archives of this distribution
-\bMojolicious-Command-generate-resources[\d\.\_]+
+\bMojolicious-Command-generate-resources-[\d\.\_]+
 
 # Avoid some SQLite files
 \b.+\.db

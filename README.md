@@ -1,6 +1,6 @@
 # NAME
 
-Mojolicious::Command::generate::resources - Resources from database tables for your application
+Mojolicious::Command::generate::resources - Generate M, V & C from database tables
 
 # SYNOPSIS
 
@@ -9,9 +9,12 @@ Mojolicious::Command::generate::resources - Resources from database tables for y
       my_app.pl generate help resources # help with all available options
       my_app.pl generate resources --tables users,groups
 
+# PERL REQUIREMENTS
+
+This command uses ["signatures" in feature](https://metacpan.org/pod/feature#signatures), therefore Perl 5.20 is required.
+
 # DESCRIPTION
 
-_This is an early release._
 [Mojolicious::Command::generate::resources](https://metacpan.org/pod/Mojolicious::Command::generate::resources) generates directory structure for
 a fully functional
 [MVC](https://metacpan.org/pod/Mojolicious::Guides::Growing#Model-View-Controller)
@@ -148,16 +151,35 @@ Usage information for this command, used for the help screen.
 
 Run this command.
 
+## render\_template\_to\_file
+
+Renders a template from a file to a file using [Mojo::Template](https://metacpan.org/pod/Mojo::Template). Parameters:
+`$tmpl_file` - full path tho the template file; `$target_file` - full path to
+the file to be written; `$template_args` - a hash reference containing the
+arguments to the template. See also ["render\_to\_file" in Mojolicious::Command](https://metacpan.org/pod/Mojolicious::Command#render_to_file).
+
+    $self->render_template_to_file($tmpl_file, $target_file, $template_args);
+
+## generate\_formfields
+
+Generates form-fields from columns information found in the repective table.
+The result is put into `_form.html.ep`. The programmer can then modify the
+generated form-fields.
+
+    $form_fields = $self->generate_formfields($table_name);
+
+## generate\_validation
+
+Generates code for the `_validation` method in the respective controler.
+
+    $validation_code = $self->generate_validation($table_name);
+
 # TODO
 
 The work on the features may not go in the same order specified here. Some
 parts may be fully implemented while others may be left for later.
 
-    - Improve documentation. Tests.
-    - Improve temlates to show more possibilities.
-    - Tests for templates (views).
-    - Tests for model classes.
-    - Test the generated routes.
+    - Improve documentation.
     - Implement generation of Open API specification out from
       tables' metadata. More tests.
 
@@ -166,7 +188,6 @@ parts may be fully implemented while others may be left for later.
     Красимир Беров
     CPAN ID: BEROV
     berov@cpan.org
-    http://i-can.eu
 
 # COPYRIGHT
 
