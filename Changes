@@ -48,3 +48,7 @@ Revision history for Perl module Mojolicious::Command::generate::routes
     - Using Test::Perl::Critic for `env TEST_AUTHOR=1`.
     - Running tests on the generated resources.
     - Mention that Perl 5.20 is required.
+
+0.10 Sun Jan 28 20:42:50 CET 2018
+    - Improved Makefile.PL.
+

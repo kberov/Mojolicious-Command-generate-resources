@@ -15,7 +15,6 @@ WriteMakefile(
   TEST_REQUIRES => {'Mojo::SQLite' => '3.000'},
   test          => {TESTS          => 't/*.t'},
   clean         => {FILES          => 'Mojolicious-Command-*'},
-  test          => {PREOP          => $preop},
   dist          => {PREOP          => $preop},
   META_MERGE    => {
     dynamic_config => 0,

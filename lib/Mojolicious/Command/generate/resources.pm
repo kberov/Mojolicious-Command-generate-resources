@@ -7,7 +7,7 @@ use Getopt::Long qw(GetOptionsFromArray :config auto_abbrev
 File::Spec::Functions->import(qw(catfile catdir));
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.09';
+our $VERSION   = '0.10';
 
 has args => sub { {} };
 has description => sub {
