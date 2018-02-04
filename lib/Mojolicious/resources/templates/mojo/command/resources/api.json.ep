@@ -1,16 +1,25 @@
 % my $a = shift;
 {
   "swagger": "2.0",
+  %# See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#info-object
   "info": {
       "version": "1.0",
       "title": "<%= $a->{api_title} %>",
       "description": "This is the OpenAPI specification for <%= $a->{api_title} %>.",
-      "licence": {
-          "name": "restricted",
-          "contact": {"name":"Company name here", "email":"company_api@example.com"}
+    %# See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#licenseObject 
+      "license": {
+          "name": "restricted"
       },
+    %# See https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#contactObject
+    "contact": {"name":"Company name here", "email":"company_api@example.com"}
   },
-  "host": "<%= $a->{api_host} %>",
   "basePath": "/api",
-
+  %# See http://localhost:3000/perldoc/Mojolicious/Plugin/OpenAPI/Guides/Tutorial
+  %# These keys are currently not in use (schemes, consumes, produces). 
+  "schemes": ["http", "https"],
+  "consumes": ["application/json", "multipart/form-data", "application/x-www-form-urlencoded"],
+  "produces": ["application/json", "text/plain", "text/html"],
+% my $json = JSON::PP->new->utf8;
+  "paths": <%= $json->encode($a->{api_paths}) %> 
 }
+
