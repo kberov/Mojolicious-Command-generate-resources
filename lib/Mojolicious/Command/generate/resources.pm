@@ -7,7 +7,7 @@ use Getopt::Long qw(GetOptionsFromArray :config auto_abbrev
 File::Spec::Functions->import(qw(catfile catdir));
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.10';
+our $VERSION   = '0.11';
 
 has args => sub { {} };
 has description => sub {
@@ -18,8 +18,9 @@ has description => sub {
   return $_[0]->{description} if $_[0]->{description};
   state $bytes   = Mojo::File->new(__FILE__)->slurp();
   state $package = __PACKAGE__;
-  return $_[0]->{description} = ($bytes =~ /$package\s+-\s+(.+)\n/ && $1);
+  return $_[0]->{description} = ($bytes =~ /$package\s+-\s+(.+)\n/)[0];
 };
+
 has usage => sub { shift->extract_usage };
 has _templates_path => '';
 has '_db_helper';
@@ -431,7 +432,7 @@ Short description of this command, used for the commands list.
 
 =head2 routes
 
-  $self->routes();
+  $self->routes;
 
 Returns an ARRAY reference containing routes, prepared after
 C<$self-E<gt>args-E<gt>{tables}>. Suggested Perl code for the routes is dumped

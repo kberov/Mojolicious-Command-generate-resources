@@ -1,0 +1,16 @@
+% my $a = shift;
+{
+  "swagger": "2.0",
+  "info": {
+      "version": "1.0",
+      "title": "<%= $a->{api_title} %>",
+      "description": "This is the OpenAPI specification for <%= $a->{api_title} %>.",
+      "licence": {
+          "name": "restricted",
+          "contact": {"name":"Company name here", "email":"company_api@example.com"}
+      },
+  },
+  "host": "<%= $a->{api_host} %>",
+  "basePath": "/api",
+
+}
