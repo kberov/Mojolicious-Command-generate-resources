@@ -1,0 +1,50 @@
+% my $a = shift;
+{
+  "ErrorResponse": {
+    "type": "object",
+    "properties": {
+      "valid": "boolean",
+      "errors:": { "$ref": "/Errors" }
+    }
+  },
+  "Errors": { "items": { "$ref": "/Error" }, "type": "array" },
+  "Error": {
+    "properties": { "path": { "type": "string" }, "message": { "type": "string" } },
+    "required": [ "message" ]
+  },
+  %# Here will be definitions for each resource, for example: User, Group, Blog, Product
+  % my $json = JSON::PP->new->utf8;
+  "resources": <%= $json->encode($a->{api_definitions}) %>,
+
+  %# Here will be described all common parameters, for example id, limit, offset...
+  %# Note! Beware to not override columns with the same name but different type.
+  %# In such case write the parameter in the respective path.json file.
+  "parameters": {
+      "limit": {
+        "default": 100,
+        "description": "How many, items to return at once (max: 100; min: 1)",
+        "in": "query",
+        "maximum": 100,
+        "minimum": 1,
+        "name": "limit",
+        "type": "integer"
+      },
+      "offset": {
+        "default": 0,
+        "description": "At what offset (min: 0)?",
+        "in": "query",
+        "minimum": 0,
+        "name": "offset",
+        "type": "integer"
+        }
+  },
+  "api_params": <%= $json->encode($a->{api_params}) %>,
+  %# Define common responses
+  "responses": {
+    "default": {
+        "description": "Default error in case of invalid request",
+        "schema": { "$ref": "/ErrorResponse" }
+    }
+  }
+}
+

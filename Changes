@@ -38,7 +38,6 @@ Revision history for Perl module Mojolicious::Command::generate::routes
     - Fixed failing tests on Windows again.
     - Small change in show.html.ep
 
-
 0.09 Sun Jan 28 20:25:37 CET 2018
     - Improved Makefile.PL. Automated generation of README and README.md.
     - Attribute 'description' now extracts description form POD.
@@ -52,6 +51,8 @@ Revision history for Perl module Mojolicious::Command::generate::routes
 0.10 Sun Jan 28 20:42:50 CET 2018
     - Improved Makefile.PL.
 
-0.11 Sun Feb  4 15:23:32 CET 2018
-    - Small code optimisations and POD improvements
+0.11 Sun Feb 11 02:03:42 CET 2018
+    - Code optimisations and POD improvements
+    - Added templates for description of resources in OpenAPI format.
+    - Implemented generation of Schema object definitions for each table.
 
