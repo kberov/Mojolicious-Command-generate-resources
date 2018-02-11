@@ -1,9 +1,7 @@
 package Mojolicious::Command::generate::resources;
 use Mojo::Base 'Mojolicious::Command', -signatures;
 
-use Mojo::Util qw(class_to_path decamelize camelize);
-use Getopt::Long
-  qw(GetOptionsFromArray :config auto_abbrev gnu_compat no_ignore_case);
+use Mojo::Util qw(class_to_path decamelize camelize getopt);
 use Mojo::File 'path';
 
 our $AUTHORITY = 'cpan:BEROV';
@@ -84,7 +82,7 @@ my $_init = sub ($self, @options) {
   # Make sure the "tables" argument exists as an empty array
   my $args = $self->args({tables => []})->args;
 
-  GetOptionsFromArray(
+  getopt(
     \@options,
     'H|home_dir=s'             => \$args->{home_dir},
     'L|lib=s'                  => \$args->{lib},
@@ -95,7 +93,7 @@ my $_init = sub ($self, @options) {
     # TODO: 'O|overwrite'              => \$args->{overwrite},
     'T|templates_root=s' => \$args->{templates_root},
     't|tables=s@'        => \$args->{tables},
-                     );
+        );
 
   @{$args->{tables}} = split(/\s*?\,\s*?/, join(',', @{$args->{tables}}));
   Carp::croak $self->usage unless scalar @{$args->{tables}};
