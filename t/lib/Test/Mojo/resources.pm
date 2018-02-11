@@ -8,9 +8,9 @@ use File::Temp qw(tempdir);
 use Test::Mojo;
 use Test::More;
 
-#our $tempdir = tempdir(TMPDIR => 1, CLEANUP => 1, TEMPLATE => 'resourcesXXXX');
+our $tempdir = tempdir(TMPDIR => 1, CLEANUP => 1, TEMPLATE => 'resourcesXXXX');
 
-our $tempdir = '/tmp/mres'; # tempdir(TMPDIR => 1, TEMPLATE => 'resourcesXXXX');
+#our $tempdir = '/tmp/mres'; # tempdir(TMPDIR => 1, TEMPLATE => 'resourcesXXXX');
 
 # Use the generated application.
 unshift @INC, "$tempdir/blog/lib";

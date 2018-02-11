@@ -21,13 +21,16 @@ my $blog = $test->app;
   local *STDOUT = $handle;
   $blog->start('generate', 'resources', '-t' => 'users,groups');
 
-  # If the loaded schema is valid it is by itself a success!!!
-  isa_ok(
-         $blog->plugin(
-                     "OpenAPI" => {url => $blog->home->rel_file("api/api.json")}
-         ),
-         'Mojolicious::Plugin::OpenAPI'
-        );
+  like($buffer, qr{\[write\].+?api[\\/]api.json}, "written api/api.json");
+  like($buffer,
+       qr{\[write\].+?api[\\/]definitions.json},
+       "written api/definitions.json");
+  like($buffer, qr{\[write\].+?api[\\/]users.json},  "written api/users.json");
+  like($buffer, qr{\[write\].+?api[\\/]groups.json}, "written api/groups.json");
 }
+
+# If the loaded schema is valid, it is by itself a success!!!
+ok($blog->plugin("OpenAPI" => {url => $blog->home->rel_file("api/api.json")}),
+   'loaded Mojolicious::Plugin::OpenAPI');
 done_testing;
 

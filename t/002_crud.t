@@ -58,10 +58,6 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
   like($buffer,
        qr{\[write\].+?users[\\/]index.html.ep},
        "written templates/users/index.html.ep");
-  like($buffer, qr{\[write\].+?api[\\/]api.json}, "written api/api.json");
-  like($buffer,
-       qr{\[write\].+?api[\\/]definitions.json},
-       "written api/definitions.json");
   like($buffer, qr{\[write\].+?blog[\\/]TODO}, "written /blog/TODO ... etc");
   my $home = $cm->app->home;
 

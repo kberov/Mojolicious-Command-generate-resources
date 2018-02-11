@@ -2,13 +2,12 @@ package Mojolicious::Command::generate::resources;
 use Mojo::Base 'Mojolicious::Command', -signatures;
 
 use Mojo::Util qw(class_to_path decamelize camelize);
-use Getopt::Long qw(GetOptionsFromArray :config auto_abbrev
-  gnu_compat no_ignore_case);
-File::Spec::Functions->import(qw(catfile catdir));
+use Getopt::Long
+  qw(GetOptionsFromArray :config auto_abbrev gnu_compat no_ignore_case);
 use Mojo::File 'path';
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.11';
+our $VERSION   = '0.12';
 
 has args => sub { {} };
 has description => sub {
@@ -27,6 +26,7 @@ has _templates_path => '';
 has '_db_helper';
 
 has routes => sub {
+  return $_[0]->{routes} if $_[0]->{routes};
   $_[0]->{routes} = [];
   foreach my $t (@{$_[0]->args->{tables}}) {
     my $controller = camelize($t);
@@ -103,16 +103,16 @@ my $_init = sub ($self, @options) {
   my $app = $self->app;
   $args->{controller_namespace} //= $app->routes->namespaces->[0];
   $args->{model_namespace}      //= ref($app) . '::Model';
-  $args->{home_dir}             //= $app->home;
-  $args->{lib}                  //= catdir($args->{home_dir}, 'lib');
-  $args->{api_dir}              //= catdir($args->{home_dir}, 'api');
-  $args->{templates_root}       //= $app->renderer->paths->[0];
+  $args->{home_dir}             //= $app->home->realpath;
+  $args->{lib}     //= path($args->{home_dir})->realpath->child('lib');
+  $args->{api_dir} //= path($args->{home_dir})->realpath->child('api');
+  $args->{templates_root}
+    //= path($app->renderer->paths->[0])->realpath->to_string;
 
   # Find templates.
-  # TODO: Look into renderer->paths for user-defined/modified templates
   for my $path (@INC) {
     my $templates_path
-      = catdir($path, 'Mojolicious/resources/templates/mojo/command/resources');
+      = path($path, 'Mojolicious/resources/templates/mojo/command/resources');
     if (-d $templates_path) {
       $self->_templates_path($templates_path);
       last;
@@ -146,7 +146,7 @@ MSG
 sub _template_path ($self, $template) {
   state $paths      = $self->app->renderer->paths;
   state $tmpls_path = $self->_templates_path;
-  -r and return $_ for map { catfile($_, $template) } @$paths, $tmpls_path;
+  -r and return $_ for map { path($_, $template) } @$paths, $tmpls_path;
   return;
 }
 
@@ -162,7 +162,7 @@ sub run ($self, %options) {
 
     # Models
     my $mclass        = "$args->{model_namespace}::$class_name";
-    my $m_file        = catfile($args->{lib}, class_to_path($mclass));
+    my $m_file        = path($args->{lib}, class_to_path($mclass));
     my $table_columns = $self->_get_table_columns($t);
     my $template_args = {
                          %$args,
@@ -177,7 +177,7 @@ sub run ($self, %options) {
 
     # Controllers
     my $class = "$args->{controller_namespace}::$class_name";
-    my $c_file = catfile($args->{lib}, class_to_path($class));
+    my $c_file = path($args->{lib}, class_to_path($class));
     $template_args = {
                       %$template_args,
                       class      => $class,
@@ -193,12 +193,12 @@ sub run ($self, %options) {
 
     my @views = qw(index create show edit);
     for my $v (@views) {
-      my $to_t_file = catfile($template_root, $template_dir, $v . '.html.ep');
+      my $to_t_file = path($template_root, $template_dir, $v . '.html.ep');
       my $tmpl = $self->_template_path($v . '.html.ep');
       $self->render_template_to_file($tmpl, $to_t_file, $template_args);
     }
     $tmpl_file = $self->_template_path('_form.html.ep');
-    my $to_t_file = catfile($template_root, $template_dir, '_form.html.ep');
+    my $to_t_file = path($template_root, $template_dir, '_form.html.ep');
     $template_args
       = {%$template_args, fields => $self->generate_formfields($t)};
     $self->render_template_to_file($tmpl_file, $to_t_file, $template_args);
@@ -210,15 +210,17 @@ sub run ($self, %options) {
       .= Mojo::Template->new->render_file($tmpl_file, $template_args);
   }    # end foreach tables
 
-  #OpenAPI
+  # OpenAPI
   $self->generate_openapi();
 
-  # Routes
+  # Routes and TODO
   my $template_args
     = {%$args, helpers => $wrapper_helpers, routes => $self->routes};
   my $tmpl_file = $self->_template_path('TODO.ep');
-  my $todo_file = catfile($args->{home_dir}, 'TODO');
+  my $todo_file = path($args->{home_dir}, 'TODO');
   $self->render_template_to_file($tmpl_file, $todo_file, $template_args);
+  say qq{$/Please look at $todo_file for instructions to complete the setup.}
+    . qq{$/Have fun!$/};
   return $self;
 }
 
@@ -309,11 +311,10 @@ sub generate_validation ($self, $table) {
 
 sub generate_openapi ($self) {
   my $tmpl_args      = {%{$self->args}};
-  my $api_dir        = $tmpl_args->{api_dir};
   my $api_tmpl_file  = $self->_template_path('api.json.ep');
-  my $api_file       = catfile($api_dir, 'api.json');
+  my $api_file       = path($tmpl_args->{api_dir}, 'api.json');
   my $defs_tmpl_file = $self->_template_path('definitions.json.ep');
-  my $defs_file      = catfile($api_dir, 'definitions.json');
+  my $defs_file      = path($tmpl_args->{api_dir}, 'definitions.json');
   $tmpl_args->{api_title}  = ref($self->app);
   $tmpl_args->{api_paths}  = {};
   $tmpl_args->{api_params} = {};
@@ -421,7 +422,7 @@ sub generate_columns_api ($self, $t, $object_api_def, $tmpl_args) {
   $tmpl_args->{t} = lc $t;
 
   state $path_tmpl_file = $self->_template_path('path.json.ep');
-  my $path_file = catfile($tmpl_args->{api_dir}, "$t.json");
+  my $path_file = path($tmpl_args->{api_dir}, "$t.json");
   $self->render_template_to_file($path_tmpl_file, $path_file, $tmpl_args);
   $tmpl_args->{api_paths}{"/$t"}      = {'$ref' => "$t.json#/~1$t"};
   $tmpl_args->{api_paths}{"/$t/{id}"} = {'$ref' => "$t.json#/~1$t~1{id}"};
