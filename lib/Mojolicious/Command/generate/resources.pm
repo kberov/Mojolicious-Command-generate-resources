@@ -5,7 +5,7 @@ use Mojo::Util qw(class_to_path decamelize camelize getopt);
 use Mojo::File 'path';
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.12';
+our $VERSION   = '0.13';
 
 has args => sub { {} };
 has description => sub {
@@ -308,74 +308,68 @@ sub generate_validation ($self, $table) {
 }
 
 sub generate_openapi ($self) {
-  my $tmpl_args      = {%{$self->args}};
-  my $api_tmpl_file  = $self->_template_path('api.json.ep');
-  my $api_file       = path($tmpl_args->{api_dir}, 'api.json');
-  my $defs_tmpl_file = $self->_template_path('definitions.json.ep');
-  my $defs_file      = path($tmpl_args->{api_dir}, 'definitions.json');
-  $tmpl_args->{api_title}  = ref($self->app);
-  $tmpl_args->{api_paths}  = {};
-  $tmpl_args->{api_params} = {};
+  my $args          = {%{$self->args}};
+  my $api_tmpl_file = $self->_template_path('api.json.ep');
+  my $api_file      = path($args->{api_dir}, 'api.json');
+  $args->{api_title} = ref($self->app);
+  $args->{api_paths} = {};
   my $api_defs = {};
-  $tmpl_args->{api_definitions} = $api_defs;
+  $args->{api_definitions} = $api_defs;
 
-  for my $t (@{$tmpl_args->{tables}}) {
+  for my $t (@{$args->{tables}}) {
 
     # Generate descriptions for table objects.
-    my $class_name = $tmpl_args->{class_name} = camelize($t);
+    my $class_name = $args->{class_name} = camelize($t);
     my $object_name = $class_name . 'Item';
-    $api_defs->{$class_name}{items}{'$ref'} = "/resources/$object_name";
+    $api_defs->{$class_name}{items}{'$ref'} = "#/definitions/$object_name";
     $api_defs->{$class_name}{type} = 'array';
     $api_defs->{$object_name}{description}
       = "An object, representing one item of $class_name.";
 
     # Generate definition and parameter description for each column.
-    $self->generate_columns_api($t, $api_defs->{$object_name}, $tmpl_args);
+    $self->generate_columns_api($t, $api_defs->{$object_name}, $args);
   }
 
   # $self->app->log->debug($self->app->dumper($api_defs));
-  $self->render_template_to_file($defs_tmpl_file, $defs_file, $tmpl_args);
-  $self->render_template_to_file($api_tmpl_file,  $api_file,  $tmpl_args);
+  $self->render_template_to_file($api_tmpl_file, $api_file, $args);
 
- # Prettify generated JSON.
- # With this step we also make sure the generated JSON is syntactically correct.
-  my $ugly = path($defs_file)->slurp();
-  path($defs_file)
-    ->spurt(JSON::PP->new->utf8->pretty->encode(JSON::PP::decode_json($ugly)));
+  # Prettify generated JSON. With this step we also make sure the generated
+  # JSON is syntactically correct.
 
-  $ugly = path($api_file)->slurp();
-  path($api_file)
-    ->spurt(JSON::PP->new->utf8->pretty->encode(JSON::PP::decode_json($ugly)));
+  my $decoded = JSON::PP::decode_json(path($api_file)->slurp());
+  $decoded->{definitions} = {%{$decoded->{definitions}}, %$api_defs};
+  path($api_file)->spurt(JSON::PP->new->utf8->pretty->encode($decoded));
 
   return;
 }
 
-sub generate_columns_api ($self, $t, $object_api_def, $tmpl_args) {
+sub generate_columns_api ($self, $t, $object_api_def, $args) {
   $object_api_def->{properties} = {};
   $object_api_def->{required}   = [];
+  my $params = {};
   for my $col (@{$self->_column_info($t)}) {
-    my $name       = $col->{COLUMN_NAME};
-    my $size       = $col->{COLUMN_SIZE} || 0;
+    my $name = $col->{COLUMN_NAME};
+    my $size += $col->{COLUMN_SIZE} || 0;    #must be number in JSON
     my $type       = $col->{TYPE_NAME};
-    my $param_name = camelize($name) . "Of$tmpl_args->{class_name}";
-    $tmpl_args->{api_params}{$param_name} = {name => $name};
+    my $param_name = camelize($name) . "Of$args->{class_name}";
+    $params->{$param_name} = {name => $name};
 
     unless ($col->{NULLABLE}) {
-      $tmpl_args->{api_params}{$param_name}{required} = Mojo::JSON->true;
+      $params->{$param_name}{required} = Mojo::JSON->true;
       push @{$object_api_def->{required}}, $name;
     }
 
     if ($type =~ /char|text|clob/i) {
       $object_api_def->{properties}{$name}
         = {($size ? (maxLength => $size) : ()), type => 'string'};
-      $tmpl_args->{api_params}{$param_name}{maxLength} = $size if $size;
-      $tmpl_args->{api_params}{$param_name}{type} = 'string';
+      $params->{$param_name}{maxLength} = $size if $size;
+      $params->{$param_name}{type} = 'string';
     }
     elsif ($type =~ /INT/i) {
       $object_api_def->{properties}{$name}
         = {($size ? (maxLength => $size) : ()), type => 'integer'};
-      $tmpl_args->{api_params}{$param_name}{maxLength} = $size if $size;
-      $tmpl_args->{api_params}{$param_name}{type} = 'integer';
+      $params->{$param_name}{maxLength} = $size if $size;
+      $params->{$param_name}{type} = 'integer';
     }
     elsif ($type =~ /FLOAT|DOUBLE|DECIMAL|NUMBER/i) {
       my $scale     = $col->{DECIMAL_DIGITS} || 0;
@@ -386,53 +380,44 @@ sub generate_columns_api ($self, $t, $object_api_def, $tmpl_args) {
                                             type    => 'number',
                                             pattern => $pattern
       };
-      $tmpl_args->{api_params}{$param_name}{maxLength} = $size if $size;
-      $tmpl_args->{api_params}{$param_name}{type} = 'number';
+      $params->{$param_name}{maxLength} = $size if $size;
+      $params->{$param_name}{type} = 'number';
     }
 
     #/$t/id
     if ($name eq 'id') {
-      my $id_in_path_param = {
-                              %{$tmpl_args->{api_params}{$param_name} || {}},
-                              in       => 'path',
-                              required => Mojo::JSON->true
-                             };
+      $params->{$param_name}{in}       = 'path';
+      $params->{$param_name}{required} = Mojo::JSON->true;
 
       # GET and DELETE
-      push @{$tmpl_args->{show_params}}, $id_in_path_param;
+      push @{$args->{show_params}}, $params->{$param_name};
 
       # PUT
-      push @{$tmpl_args->{update_params}}, $id_in_path_param;
-
+      push @{$args->{update_params}}, $params->{$param_name};
       next;
     }
 
+    # All other params are in form-data
+    $params->{$param_name}{in} = 'formData';
+
     # POST
-    push @{$tmpl_args->{store_params}},
-      {'$ref' => "definitions.json#/api_params/$param_name"};
+    push @{$args->{store_params}}, $params->{$param_name};
 
     # PUT
-    push @{$tmpl_args->{update_params}},
-      {'$ref' => "definitions.json#/api_params/$param_name"};
-
+    push @{$args->{update_params}}, $params->{$param_name};
   }    #end for my $col (@{$self->_column_info($t)})
-
-  $tmpl_args->{t} = lc $t;
+  $args->{t} = lc $t;
 
   state $path_tmpl_file = $self->_template_path('path.json.ep');
-  my $path_file = path($tmpl_args->{api_dir}, "$t.json");
-  $self->render_template_to_file($path_tmpl_file, $path_file, $tmpl_args);
-  $tmpl_args->{api_paths}{"/$t"}      = {'$ref' => "$t.json#/~1$t"};
-  $tmpl_args->{api_paths}{"/$t/{id}"} = {'$ref' => "$t.json#/~1$t~1{id}"};
+  my $ugly = Mojo::Template->new->render_file($path_tmpl_file, $args);
 
- # prettify generated JSON.
- # With this step we also make sure the generated JSON is syntactically correct.
-  my $ugly = path($path_file)->slurp();
-  path($path_file)
-    ->spurt(JSON::PP->new->utf8->pretty->encode(JSON::PP::decode_json($ugly)));
+  # Make sure the generated JSON is syntactically correct.
+  my $decoded = JSON::PP::decode_json($ugly);
+
+  $args->{api_paths} = {%{$args->{api_paths}}, %$decoded};
 
   # Cleanup for the next table
-  delete $tmpl_args->{$_} for (qw(t store_params update_params show_params));
+  delete $args->{$_} for (qw(t store_params update_params show_params));
   return;
 }
 
@@ -631,7 +616,6 @@ generated form-fields.
 Generates L<Open API|https://github.com/OAI/OpenAPI-Specification> files in
 json format.  The generated files are put in L</--api_dir>. The files are:
 C<api.json> - the file which will be loaded by C<MyApp> and refers to the
-specific path files; C<definitions.json> - this file is referred to in the
 specific path files; C<$path.json> - a file for each resource, based on the
 table name from which it is generated.
 
@@ -657,7 +641,8 @@ parts may be fully implemented while others may be left for later.
 
     - Improve documentation.
     - Implement generation of Open API specification out from
-      tables' metadata. More tests.
+      tables' metadata. Do not destroy the existing api.json if it already
+      exists. More tests.
 
 =head1 AUTHOR
 

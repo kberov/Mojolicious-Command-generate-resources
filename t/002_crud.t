@@ -5,8 +5,7 @@ use FindBin;
 use lib "$FindBin::Bin/lib";
 use Test::Mojo::resources;    # load it from "$FindBin::Bin/lib"
 
-our $tempdir = $Test::Mojo::resources::tempdir
-  ;    # tempdir(TMPDIR => 1, TEMPLATE => 'resourcesXXXX');
+our $tempdir = Test::Mojo::resources::tempdir;
 
 # help
 my $buffer = '';

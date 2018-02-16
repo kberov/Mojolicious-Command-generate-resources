@@ -5,8 +5,7 @@ use FindBin;
 use lib "$FindBin::Bin/lib";
 use Test::Mojo::resources;    # load it from "$FindBin::Bin/lib"
 
-our $tempdir = $Test::Mojo::resources::tempdir
-  ;    # tempdir(TMPDIR => 1, TEMPLATE => 'resourcesXXXX');
+our $tempdir = Test::Mojo::resources::tempdir;
 
 Test::Mojo::resources::install_app();
 
@@ -22,15 +21,11 @@ my $blog = $test->app;
   $blog->start('generate', 'resources', '-t' => 'users,groups');
 
   like($buffer, qr{\[write\].+?api[\\/]api.json}, "written api/api.json");
-  like($buffer,
-       qr{\[write\].+?api[\\/]definitions.json},
-       "written api/definitions.json");
-  like($buffer, qr{\[write\].+?api[\\/]users.json},  "written api/users.json");
-  like($buffer, qr{\[write\].+?api[\\/]groups.json}, "written api/groups.json");
 }
 
 # If the loaded schema is valid, it is by itself a success!!!
 ok($blog->plugin("OpenAPI" => {url => $blog->home->rel_file("api/api.json")}),
    'loaded Mojolicious::Plugin::OpenAPI');
+
 done_testing;
 

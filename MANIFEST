@@ -5,7 +5,6 @@ lib/Mojolicious/resources/templates/mojo/command/resources/_form.html.ep
 lib/Mojolicious/resources/templates/mojo/command/resources/api.json.ep
 lib/Mojolicious/resources/templates/mojo/command/resources/c_class.ep
 lib/Mojolicious/resources/templates/mojo/command/resources/create.html.ep
-lib/Mojolicious/resources/templates/mojo/command/resources/definitions.json.ep
 lib/Mojolicious/resources/templates/mojo/command/resources/edit.html.ep
 lib/Mojolicious/resources/templates/mojo/command/resources/helper.ep
 lib/Mojolicious/resources/templates/mojo/command/resources/index.html.ep

@@ -6,16 +6,16 @@
       "summary": "List all records of type <%= $a->{class_name} %>.",
       "description":"List all records of type <%= $a->{class_name} %> according to the client's priviledges.",
       "parameters": [
-        { "$ref": "definitions.json#/parameters/limit" },
-        { "$ref": "definitions.json#/parameters/offset" }
+        { "$ref": "#/parameters/limit" },
+        { "$ref": "#/parameters/offset" }
       ],
       "responses": {
         %# Refer to shared response-objects or define specific to this path only.
         "200": {
           "description": "An array of <%= $a->{class_name} %>.",
-          "schema": { "$ref": "definitions.json#/resources/<%= $a->{class_name} %>" }
+          "schema": { "$ref": "#/definitions/<%= $a->{class_name} %>" }
         },
-        "default": { "$ref": "definitions.json#/ErrorResponse"}
+        "default": { "$ref": "#/definitions/ErrorResponse"}
       }
     },
     "post": {
@@ -32,7 +32,7 @@
         },
         "400": {
           "description": "Bad Request",
-          "schema": { "$ref": "definitions.json#/Error"}
+          "schema": { "$ref": "#/definitions/Error"}
         }
       }
     }
@@ -47,9 +47,9 @@
         %# Refer to shared responses or define specific to this path only.
         "200": {
           "description": "An object of type <%= $a->{class_name} %>Item.",
-          "schema": { "$ref": "definitions.json#/resources/<%= $a->{class_name} %>Item" }
+          "schema": { "$ref": "#/definitions/<%= $a->{class_name} %>Item" }
         },
-        "default": { "$ref": "definitions.json#/ErrorResponse"}
+        "default": { "$ref": "#/definitions/ErrorResponse"}
       }
     },
     "put": {
@@ -61,7 +61,7 @@
         "204" : {
           "description": "Response to a valid PUT request. Response body will be empty."
         },
-        "default":  { "$ref": "definitions.json#/ErrorResponse"}
+        "default":  { "$ref": "#/definitions/ErrorResponse"}
       } 
     },
     "delete": {
@@ -72,7 +72,7 @@
       "responses": {
         "204": { "description":"No content. The resource is deleted." },
         "404":{ "description": "Not Found. The resource is already gone." },
-        "default": { "$ref": "definitions.json#/ErrorResponse"}
+        "default": { "$ref": "#/definitions/ErrorResponse"}
       }
     }
   }
