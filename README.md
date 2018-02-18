@@ -15,7 +15,7 @@ This command uses ["signatures" in feature](https://metacpan.org/pod/feature#sig
 
 # DESCRIPTION
 
-An early release...
+An usable release...
 
 [Mojolicious::Command::generate::resources](https://metacpan.org/pod/Mojolicious::Command::generate::resources) generates directory structure for
 a fully functional [MVC](https://metacpan.org/pod/Mojolicious::Guides::Growing#Model-View-Controller)

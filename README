@@ -13,7 +13,7 @@ PERL REQUIREMENTS
     required.
 
 DESCRIPTION
-    An early release...
+    An usable release...
 
     Mojolicious::Command::generate::resources generates directory structure
     for a fully functional MVC set of files, routes and RESTful API
