@@ -69,7 +69,7 @@ generate your controllers into e.g. `site_lib`, set this option.
 ## api\_dir
 
 Optional. Directory where
-the [OpenAPI](https://github.com/OAI/OpenAPI-Specification) `json` files will
+the [OpenAPI](https://github.com/OAI/OpenAPI-Specification) `json` file will
 be generated. Defaults to `app->home/api` (relative to the `--home_dir`
 directory). If you installed [MyApp](https://metacpan.org/pod/MyApp) in some custom path and you wish to
 generate your `OpenApi` files into for example `site_lib/MyApp/etc/api`, set
@@ -192,9 +192,9 @@ format. The generated file is put in ["--api\_dir"](#api_dir). The filename is
 
 Generates API definitions and paths for each table. Invoked in
 ["generate\_openapi"](#generate_openapi). **Paramaters:** `$t` - the table name;
-$`$api_defs_object` - the object API definition, based on the table name;
+`$api_defs_object` - the object API definition, based on the table name;
 `$tmpl_args` - the arguments for the templates. `$api_defs_object` and
-$`tmpl_args` will be enriched with additional key-value pairs as required by
+`$tmpl_args` will be enriched with additional key-value pairs as required by
 the OpenAPI specification. Returns `void`.
 
 ## generate\_validation
@@ -209,9 +209,7 @@ The work on the features may not go in the same order specified here. Some
 parts may be fully implemented while others may be left for later.
 
     - Improve documentation.
-    - Implement generation of Open API specification out from
-      tables' metadata. Do not destroy the existing api.json if it already
-      exists. More tests.
+    - Append to the existing api.json if it already exists. More tests.
 
 # AUTHOR
 

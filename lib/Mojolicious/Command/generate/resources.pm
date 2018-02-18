@@ -6,19 +6,11 @@ use Mojo::File 'path';
 use List::Util 'first';
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.13';
+our $VERSION   = '0.14';
 
 has args => sub { {} };
-has description => sub {
-  if ($_[1]) {
-    $_[0]->{description} = $_[1];
-    return $_[0];
-  }
-  return $_[0]->{description} if $_[0]->{description};
-  state $bytes   = path(__FILE__)->slurp();
-  state $package = __PACKAGE__;
-  return $_[0]->{description} = ($bytes =~ /$package\s+-\s+(.+)\n/)[0];
-};
+has description =>
+  (path(__FILE__)->slurp() =~ /${\__PACKAGE__}\s+-\s+(.+)\n/)[0];
 
 has usage => sub { shift->extract_usage };
 has _templates_path => '';
@@ -327,7 +319,7 @@ sub generate_openapi ($self) {
       = "An object, representing one item of $class_name.";
 
     # Generate definition and parameter description for each column.
-    $self->generate_columns_api($t, $api_defs->{$object_name}, $args);
+    $self->generate_path_api($t, $api_defs->{$object_name}, $args);
   }
 
   $self->render_template_to_file($api_tmpl_file, $api_file, $args);
@@ -342,7 +334,7 @@ sub generate_openapi ($self) {
   return;
 }
 
-sub generate_columns_api ($self, $t, $object_api_def, $args) {
+sub generate_path_api ($self, $t, $object_api_def, $args) {
   $object_api_def->{properties} = {};
   $object_api_def->{required}   = [];
   my $params = {};
@@ -504,7 +496,7 @@ generate your controllers into e.g. C<site_lib>, set this option.
 =head2 api_dir
 
 Optional. Directory where
-the L<OpenAPI|https://github.com/OAI/OpenAPI-Specification> C<json> files will
+the L<OpenAPI|https://github.com/OAI/OpenAPI-Specification> C<json> file will
 be generated. Defaults to C<app-E<gt>home/api> (relative to the C<--home_dir>
 directory). If you installed L<MyApp> in some custom path and you wish to
 generate your C<OpenApi> files into for example C<site_lib/MyApp/etc/api>, set
@@ -627,9 +619,9 @@ C<api.json>. This is the file which will be loaded by C<MyApp>.
 
 Generates API definitions and paths for each table. Invoked in
 L</generate_openapi>. B<Paramaters:> C<$t> - the table name;
-$C<$api_defs_object> - the object API definition, based on the table name;
+C<$api_defs_object> - the object API definition, based on the table name;
 C<$tmpl_args> - the arguments for the templates. C<$api_defs_object> and
-$C<tmpl_args> will be enriched with additional key-value pairs as required by
+C<$tmpl_args> will be enriched with additional key-value pairs as required by
 the OpenAPI specification. Returns C<void>.
 
 =head2 generate_validation
@@ -644,9 +636,7 @@ The work on the features may not go in the same order specified here. Some
 parts may be fully implemented while others may be left for later.
 
     - Improve documentation.
-    - Implement generation of Open API specification out from
-      tables' metadata. Do not destroy the existing api.json if it already
-      exists. More tests.
+    - Append to the existing api.json if it already exists. More tests.
 
 =head1 AUTHOR
 

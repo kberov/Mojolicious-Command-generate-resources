@@ -67,3 +67,7 @@ Revision history for Perl module Mojolicious::Command::generate::routes
     - Added tests for generated API.
     - Added tests for the generated code via the API.
 
+0.14
+    - Added some very basic tests.
+    - Improved 'description' attribute.
+    - Improved documentation.
