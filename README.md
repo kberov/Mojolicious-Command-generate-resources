@@ -184,16 +184,13 @@ generated form-fields.
 
 ## generate\_openapi
 
-Generates [Open API](https://github.com/OAI/OpenAPI-Specification) files in
-json format.  The generated files are put in ["--api\_dir"](#api_dir). The files are:
-`api.json` - the file which will be loaded by `MyApp` and refers to the
-specific path files; `definitions.json` - this file is referred to in the
-specific path files; `$path.json` - a file for each resource, based on the
-table name from which it is generated.
+Generates [Open API](https://github.com/OAI/OpenAPI-Specification) file in json
+format. The generated file is put in ["--api\_dir"](#api_dir). The filename is
+`api.json`. This is the file which will be loaded by `MyApp`.
 
 ## generate\_path\_api
 
-Generates API definitions and path file for each table. Invoked in
+Generates API definitions and paths for each table. Invoked in
 ["generate\_openapi"](#generate_openapi). **Paramaters:** `$t` - the table name;
 $`$api_defs_object` - the object API definition, based on the table name;
 `$tmpl_args` - the arguments for the templates. `$api_defs_object` and
@@ -213,7 +210,8 @@ parts may be fully implemented while others may be left for later.
 
     - Improve documentation.
     - Implement generation of Open API specification out from
-      tables' metadata. More tests.
+      tables' metadata. Do not destroy the existing api.json if it already
+      exists. More tests.
 
 # AUTHOR
 

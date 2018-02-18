@@ -2,7 +2,8 @@
 {
   "/<%= $a->{t} %>": {
     "get": {
-      "operationId": "index<%= $a->{class_name} %>",
+      "operationId": "api.<%= $a->{home_route}{name} %>",
+      "x-mojo-to": "<%= $a->{home_route}{to} %>",
       "summary": "List all records of type <%= $a->{class_name} %>.",
       "description":"List all records of type <%= $a->{class_name} %> according to the client's priviledges.",
       "parameters": [
@@ -19,7 +20,8 @@
       }
     },
     "post": {
-      "operationId": "store<%= $a->{class_name} %>",
+      "operationId": "api.<%= $a->{store_route}{name} %>",
+      "x-mojo-to": "<%= $a->{store_route}{to} %>",
       "summary": "Create and store an object of type <%= $a->{class_name} %>Item.",
       "description": "Create  and store an object of type <%= $a->{class_name} %>Item.",
        %# Refer to shared parameters and define specific to this path only.
@@ -39,7 +41,8 @@
   },
   "/<%= $a->{t} %>/{id}" : {
     "get": {
-      "operationId": "show<%= $a->{class_name} %>",
+      "operationId": "api.<%= $a->{show_route}{name} %>",
+      "x-mojo-to": "<%= $a->{show_route}{to} %>",
       "summary": "Show an object of type <%= $a->{class_name} %>Item.",
       "description": "Show an object of type <%= $a->{class_name} %>Item.",
       "parameters": <%= $json->encode($a->{show_params}) %>,
@@ -53,7 +56,8 @@
       }
     },
     "put": {
-      "operationId": "update<%= $a->{class_name} %>",
+      "operationId": "api.<%= $a->{update_route}{name} %>",
+      "x-mojo-to": "<%= $a->{update_route}{to} %>",
       "summary": "Update an object of type <%= $a->{class_name} %>Item.",
       "description": "Update an object of type <%= $a->{class_name} %>Item.",
       "parameters": <%= $json->encode($a->{update_params}) %>,
@@ -65,7 +69,8 @@
       } 
     },
     "delete": {
-      "operationId": "remove<%= $a->{class_name} %>",
+      "operationId": "api.<%= $a->{remove_route}{name} %>",
+      "x-mojo-to": "<%= $a->{remove_route}{to} %>",
       "summary": "Delete an object of type <%= $a->{class_name} %>Item.",
       "description": "Delete an object of type <%= $a->{class_name} %>Item.",
       "parameters": <%= $json->encode($a->{show_params}) %>,

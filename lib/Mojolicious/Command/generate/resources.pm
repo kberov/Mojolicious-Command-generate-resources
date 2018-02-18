@@ -3,6 +3,7 @@ use Mojo::Base 'Mojolicious::Command', -signatures;
 
 use Mojo::Util qw(class_to_path decamelize camelize getopt);
 use Mojo::File 'path';
+use List::Util 'first';
 
 our $AUTHORITY = 'cpan:BEROV';
 our $VERSION   = '0.13';
@@ -24,7 +25,6 @@ has _templates_path => '';
 has '_db_helper';
 
 has routes => sub {
-  return $_[0]->{routes} if $_[0]->{routes};
   $_[0]->{routes} = [];
   foreach my $t (@{$_[0]->args->{tables}}) {
     my $controller = camelize($t);
@@ -311,7 +311,7 @@ sub generate_openapi ($self) {
   my $args          = {%{$self->args}};
   my $api_tmpl_file = $self->_template_path('api.json.ep');
   my $api_file      = path($args->{api_dir}, 'api.json');
-  $args->{api_title} = ref($self->app);
+  $args->{api_title} = ref($self->app) . ' OpenAPI';
   $args->{api_paths} = {};
   my $api_defs = {};
   $args->{api_definitions} = $api_defs;
@@ -330,7 +330,6 @@ sub generate_openapi ($self) {
     $self->generate_columns_api($t, $api_defs->{$object_name}, $args);
   }
 
-  # $self->app->log->debug($self->app->dumper($api_defs));
   $self->render_template_to_file($api_tmpl_file, $api_file, $args);
 
   # Prettify generated JSON. With this step we also make sure the generated
@@ -349,8 +348,8 @@ sub generate_columns_api ($self, $t, $object_api_def, $args) {
   my $params = {};
   for my $col (@{$self->_column_info($t)}) {
     my $name = $col->{COLUMN_NAME};
-    my $size += $col->{COLUMN_SIZE} || 0;    #must be number in JSON
-    my $type       = $col->{TYPE_NAME};
+    my $size = +$col->{COLUMN_SIZE} || 0;    #must be number in JSON
+    my $type = $col->{TYPE_NAME};
     my $param_name = camelize($name) . "Of$args->{class_name}";
     $params->{$param_name} = {name => $name};
 
@@ -408,6 +407,9 @@ sub generate_columns_api ($self, $t, $object_api_def, $args) {
   }    #end for my $col (@{$self->_column_info($t)})
   $args->{t} = lc $t;
 
+  for my $r (qw(home_ show_ store_ update_ remove_)) {
+    $args->{$r . 'route'} = first { $_->{name} =~ /^$r$t/ } @{$self->routes};
+  }
   state $path_tmpl_file = $self->_template_path('path.json.ep');
   my $ugly = Mojo::Template->new->render_file($path_tmpl_file, $args);
 
@@ -417,7 +419,11 @@ sub generate_columns_api ($self, $t, $object_api_def, $args) {
   $args->{api_paths} = {%{$args->{api_paths}}, %$decoded};
 
   # Cleanup for the next table
-  delete $args->{$_} for (qw(t store_params update_params show_params));
+  delete $args->{$_}
+    for (
+         qw(t store_params update_params show_params
+         home_route show_route store_route update_route remove_route)
+        );
   return;
 }
 
@@ -443,7 +449,7 @@ This command uses L<feature/signatures>, therefore Perl 5.20 is required.
 
 =head1 DESCRIPTION
 
-An early release...
+An usable release...
 
 L<Mojolicious::Command::generate::resources> generates directory structure for
 a fully functional L<MVC|Mojolicious::Guides::Growing/"Model View Controller">
@@ -613,15 +619,13 @@ generated form-fields.
 
 =head2 generate_openapi
 
-Generates L<Open API|https://github.com/OAI/OpenAPI-Specification> files in
-json format.  The generated files are put in L</--api_dir>. The files are:
-C<api.json> - the file which will be loaded by C<MyApp> and refers to the
-specific path files; C<$path.json> - a file for each resource, based on the
-table name from which it is generated.
+Generates L<Open API|https://github.com/OAI/OpenAPI-Specification> file in json
+format. The generated file is put in L</--api_dir>. The filename is
+C<api.json>. This is the file which will be loaded by C<MyApp>.
 
 =head2 generate_path_api
 
-Generates API definitions and path file for each table. Invoked in
+Generates API definitions and paths for each table. Invoked in
 L</generate_openapi>. B<Paramaters:> C<$t> - the table name;
 $C<$api_defs_object> - the object API definition, based on the table name;
 C<$tmpl_args> - the arguments for the templates. C<$api_defs_object> and
