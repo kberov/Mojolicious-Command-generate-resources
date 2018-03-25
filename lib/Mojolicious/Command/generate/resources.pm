@@ -440,6 +440,7 @@ Mojolicious::Command::generate::resources - Generate MVC & OpenAPI RESTful API f
 
     my_app.pl generate help resources # help with all available options
     my_app.pl generate resources --tables users,groups
+    my_app.pl generate resources --tables users,groups -D dbx
 
 =head1 PERL REQUIREMENTS
 
@@ -542,6 +543,15 @@ C<app-E<gt>renderer-E<gt>paths> in C<myapp.conf>.
     # Application/site specific templates
     # See /perldoc/Mojolicious/Renderer#paths
     unshift @{app->renderer->paths}, $home->rel_file('site_templates');
+
+=head2 D|db_helper=s
+
+Optional. If passed, this method name will be used when generating Model
+classes and helpers. The application is still expected to support the unified
+API of the supported database adapters. This feature helps to generate code
+for an application that wants to support all the three adaptors or if for
+example tomorrow suddenly appears a Mojo::Oracle tiny wrapper around
+L<DBD::Oracle>.
 
 =head2 t|tables=s@
 
