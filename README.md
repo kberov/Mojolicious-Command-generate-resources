@@ -67,7 +67,7 @@ Optional. Defaults to `app->home/lib` (relative to the `--home_dir`
 directory). If you installed [MyApp](https://metacpan.org/pod/MyApp) in some custom path and you wish to
 generate your controllers into e.g. `site_lib`, set this option.
 
-## api\_dir
+## api\_dir=s
 
 Optional. Directory where
 the [OpenAPI](https://github.com/OAI/OpenAPI-Specification) `json` file will

@@ -62,7 +62,7 @@ OPTIONS
     directory). If you installed MyApp in some custom path and you wish to
     generate your controllers into e.g. "site_lib", set this option.
 
-  api_dir
+  api_dir=s
     Optional. Directory where the OpenAPI
     <https://github.com/OAI/OpenAPI-Specification> "json" file will be
     generated. Defaults to "app->home/api" (relative to the "--home_dir"

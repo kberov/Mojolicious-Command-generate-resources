@@ -1,5 +1,9 @@
 Revision history for Perl module Mojolicious::Command::generate::routes
 
+0.17 Sat Mar 31 01:07:42 CEST 2018
+    - Fixed bug. --api_dir argument was treated as boolean. Should be treated
+      as a string. Added test.
+
 0.16 Mon Mar 26 00:08:07 CEST 2018
     - Reversed order of versions in file Changes.
 
