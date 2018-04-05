@@ -1,4 +1,9 @@
-Revision history for Perl module Mojolicious::Command::generate::routes
+Revision history for Perl module Mojolicious::Command::generate::resources
+
+0.18 Sat Mar 31 03:00:42 CEST 2018
+    - Improved generated code to be compliant with Perl::Critic severity
+      "harsh".
+    - TODO: May be add some POD even some day.
 
 0.17 Sat Mar 31 01:07:42 CEST 2018
     - Fixed bug. --api_dir argument was treated as boolean. Should be treated

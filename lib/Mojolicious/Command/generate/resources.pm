@@ -6,7 +6,7 @@ use Mojo::File 'path';
 use List::Util 'first';
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.17';
+our $VERSION   = '0.18';
 
 has args => sub { {} };
 has description =>

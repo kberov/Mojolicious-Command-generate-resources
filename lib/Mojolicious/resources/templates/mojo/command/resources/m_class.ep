@@ -23,11 +23,11 @@ sub find($self, $id) {
 }
 
 sub remove($self, $id) {
-  $self-><%= $a->{db_helper} %>->db->delete('<%= $a->{t} %>', {id => $id});
+  return $self-><%= $a->{db_helper} %>->db->delete('<%= $a->{t} %>', {id => $id});
 }
 
 sub save($self, $id, $row) {
-  $self-><%= $a->{db_helper} %>->db->update('<%= $a->{t} %>', $row, {id => $id});
+  return $self-><%= $a->{db_helper} %>->db->update('<%= $a->{t} %>', $row, {id => $id});
 }
 
 1;
