@@ -1,5 +1,9 @@
 Revision history for Perl module Mojolicious::Command::generate::resources
 
+0.19 Thu Apr  5 23:40:04 CEST 2018
+    - Improved generated show.html.ep
+    - Improved some tests.
+
 0.18 Sat Mar 31 03:00:42 CEST 2018
     - Improved generated code to be compliant with Perl::Critic severity
       "harsh".
