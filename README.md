@@ -219,6 +219,8 @@ The work on the features may not go in the same order specified here. Some
 parts may be fully implemented while others may be left for later.
 
     - Improve documentation.
+    - Add initial documentation stub to the generated classes.
+    - Improve templates to generate code to which is more ready to use.
     - Append to the existing api.json if it already exists. More tests.
 
 # AUTHOR
