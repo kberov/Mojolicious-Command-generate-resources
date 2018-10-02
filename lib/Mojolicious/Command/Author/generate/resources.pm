@@ -1,4 +1,4 @@
-package Mojolicious::Command::generate::resources;
+package Mojolicious::Command::Author::generate::resources;
 use Mojo::Base 'Mojolicious::Command', -signatures;
 
 use Mojo::Util qw(class_to_path decamelize camelize getopt);
