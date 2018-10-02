@@ -13,7 +13,7 @@ my $buffer = '';
   my $commands = Mojolicious::Commands->new;
   open my $handle, '>', \$buffer;
   local *STDOUT = $handle;
-  $commands->run('help', 'generate', 'resources');
+  $commands->run('generate', 'help', 'resources');
 }
 like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
   'right help output';
@@ -41,7 +41,7 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
   local *STDOUT = $handle;
   my $blog = Blog->new;
   push @{$blog->renderer->paths}, $blog->home->rel_file('resources_templates');
-  my $cm = Mojolicious::Command::generate::resources->new(app => $blog)
+  my $cm = Mojolicious::Command::Author::generate::resources->new(app => $blog)
     ->run('-t' => 'users,groups');
   like($buffer,
        qr|\[exist\].+?lib.+Controller|,
@@ -84,7 +84,7 @@ like $buffer, qr/Usage: APPLICATION generate resources \[OPTIONS\]/,
   my $blog = $test->app;
 
 # Generate new routes and helpers for the instantiated application.
-  my $cm = Mojolicious::Command::generate::resources->new(app => $blog);
+  my $cm = Mojolicious::Command::Author::generate::resources->new(app => $blog);
   $cm->args->{tables} = [qw(groups users)];
   my $app_routes = $blog->routes;
   for my $r (@{$cm->routes}) {
