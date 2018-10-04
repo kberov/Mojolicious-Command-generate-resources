@@ -1,6 +1,6 @@
 .perltidyrc
 Changes
-lib/Mojolicious/Command/generate/resources.pm
+lib/Mojolicious/Command/Author/generate/resources.pm
 lib/Mojolicious/resources/templates/mojo/command/resources/_form.html.ep
 lib/Mojolicious/resources/templates/mojo/command/resources/api.json.ep
 lib/Mojolicious/resources/templates/mojo/command/resources/c_class.ep

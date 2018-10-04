@@ -1,6 +1,6 @@
 NAME
-    Mojolicious::Command::generate::resources - Generate MVC & OpenAPI
-    RESTful API files from database tables
+    Mojolicious::Command::Author::generate::resources - Generate MVC &
+    OpenAPI RESTful API files from database tables
 
 SYNOPSIS
       Usage: APPLICATION generate resources [OPTIONS]

@@ -61,7 +61,7 @@ sub show($c) {
   my $row = $c-><%= $a->{t} %>->find($c->param('id'));
   if($c->current_route =~ /^api\./) { #invoked via OpenAPI
     return $c->render(openapi=> {
-        errors => [{path => $c->url_for, message => 'Not Found'}]
+        errors => [{path => $c->url_for->to_string, message => 'Not Found'}]
       }, status => 404) unless $row;
     return $c->render(openapi => $row);
   }

@@ -7,8 +7,8 @@ my $module_file = 'lib/Mojolicious/Command/Author/generate/resources.pm';
 my $preop       = qq'pod2text $module_file > README;'
   . qq'pod2markdown $module_file > README.md';
 WriteMakefile(
-  NAME          => 'Mojolicious::Command::generate::resources',
-  VERSION_FROM  => $module_file,                               # finds \$VERSION
+  NAME => 'Mojolicious::Command::Author::generate::resources',
+  VERSION_FROM  => $module_file,                        # finds \$VERSION
   AUTHOR        => 'Красимир Беров (berov@cpan.org)',
   ABSTRACT_FROM => $module_file,
   PREREQ_PM => {'Mojolicious' => '8.0', perl => '5.020001'},

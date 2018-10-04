@@ -1,5 +1,10 @@
 Revision history for Perl module Mojolicious::Command::generate::resources
 
+0.22 Thu Oct  4 16:43:49 2018
+    - Changed namespace from  Mojolicious::Command::generate::resources to
+      Mojolicious::Command::Author::generate::resources  and thus made it
+      usable with Mojolicious 8.0+. Thanks RENEEB!
+
 0.21 Mon Apr 16 23:12:19 CEST 2018
 
     - Small improvements in generated code while using this command for

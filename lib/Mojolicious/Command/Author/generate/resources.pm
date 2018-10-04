@@ -6,7 +6,7 @@ use Mojo::File 'path';
 use List::Util 'first';
 
 our $AUTHORITY = 'cpan:BEROV';
-our $VERSION   = '0.21';
+our $VERSION   = '0.22';
 
 has args => sub { {} };
 has description =>
@@ -432,7 +432,7 @@ sub generate_path_api ($self, $t, $object_api_def, $args) {
 
 =head1 NAME
 
-Mojolicious::Command::generate::resources - Generate MVC & OpenAPI RESTful API files from database tables
+Mojolicious::Command::Author::generate::resources - Generate MVC & OpenAPI RESTful API files from database tables
 
 =head1 SYNOPSIS
 

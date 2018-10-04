@@ -1,7 +1,7 @@
 # t/001_load.t - check module loading, instantiation and attributes
 use Test::More;
 
-my $class = 'Mojolicious::Command::generate::resources';
+my $class = 'Mojolicious::Command::Author::generate::resources';
 require_ok($class);
 my $cmd = $class->new;
 like($cmd->description, qr/ database tables$/, 'default description');
